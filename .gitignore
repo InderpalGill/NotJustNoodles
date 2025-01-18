@@ -1,0 +1,9 @@
+# =============================================================================
+# DOCUMENTATION
+# =============================================================================
+# recommended vitepress ignores
+docs/.vitepress/dist
+docs/.vitepress/cache
+
+# node modules
+node_modules/

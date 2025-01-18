@@ -7,10 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      '@cynber/vitepress-valence':
-        specifier: ^0.1.2
-        version: 0.1.2(@iconify/vue@4.3.0(vue@3.5.13))(vitepress@1.5.0(@algolia/client-search@5.19.0)(postcss@8.5.1)(search-insights@2.17.3))(vue@3.5.13)
     devDependencies:
       vitepress:
         specifier: ^1.5.0
@@ -109,13 +105,6 @@ packages:
   '@babel/types@7.26.5':
     resolution: {integrity: sha512-L6mZmwFDK6Cjh1nRCLXpa6no13ZIioJDz7mdkzHv399pThrTa/k0nUlNaenOeh2kWu/iaOQYElEpKPUswUa9Vg==}
     engines: {node: '>=6.9.0'}
-
-  '@cynber/vitepress-valence@0.1.2':
-    resolution: {integrity: sha512-wMLyzlzMbJ2kTGdO4VUOa2tam6Sf9FFgf7+M5BQJLwTVBtxGII5SsRTPaW8r5VGSDbrGDM2OwVbnPxQlvqLGUw==}
-    peerDependencies:
-      '@iconify/vue': ^4.1.2
-      vitepress: ^1.0.0
-      vue: ^3.3.0
 
   '@docsearch/css@3.8.2':
     resolution: {integrity: sha512-y05ayQFyUmCXze79+56v/4HpycYF3uFqB78pLPrSV5ZKAlDuIAAJNhaRi8tTdRNXh05yxX/TyNnzD6LwSM89vQ==}
@@ -283,11 +272,6 @@ packages:
 
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
-
-  '@iconify/vue@4.3.0':
-    resolution: {integrity: sha512-Xq0h6zMrHBbrW8jXJ9fISi+x8oDQllg5hTDkDuxnWiskJ63rpJu9CvJshj8VniHVTbsxCg9fVoPAaNp3RQI5OQ==}
-    peerDependencies:
-      vue: '>=3'
 
   '@jridgewell/sourcemap-codec@1.5.0':
     resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
@@ -912,12 +896,6 @@ snapshots:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
 
-  '@cynber/vitepress-valence@0.1.2(@iconify/vue@4.3.0(vue@3.5.13))(vitepress@1.5.0(@algolia/client-search@5.19.0)(postcss@8.5.1)(search-insights@2.17.3))(vue@3.5.13)':
-    dependencies:
-      '@iconify/vue': 4.3.0(vue@3.5.13)
-      vitepress: 1.5.0(@algolia/client-search@5.19.0)(postcss@8.5.1)(search-insights@2.17.3)
-      vue: 3.5.13
-
   '@docsearch/css@3.8.2': {}
 
   '@docsearch/js@3.8.2(@algolia/client-search@5.19.0)(search-insights@2.17.3)':
@@ -1016,11 +994,6 @@ snapshots:
       '@iconify/types': 2.0.0
 
   '@iconify/types@2.0.0': {}
-
-  '@iconify/vue@4.3.0(vue@3.5.13)':
-    dependencies:
-      '@iconify/types': 2.0.0
-      vue: 3.5.13
 
   '@jridgewell/sourcemap-codec@1.5.0': {}
 
