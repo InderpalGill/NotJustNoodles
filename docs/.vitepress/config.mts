@@ -5,7 +5,7 @@ export default defineConfig({
   title: "NWHacks 2025",
   description: "Placeholder description",
   cleanUrls: true,
-  // base: 
+  base: "/streak-saver/",
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
