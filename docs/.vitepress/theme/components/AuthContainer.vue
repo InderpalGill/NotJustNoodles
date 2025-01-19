@@ -8,7 +8,7 @@
       <div class="image-container">
     <img src="./Images/image.jpg" alt="Fruits and smoothie" class="background-image">
     <div class="overlay-text">
-      <h1>Welcome to your Nutrition Dashboard</h1></div>
+      <h1>Welcome to MacroMap</h1></div>
   </div>
       <!-- <div class="auth-image">
         <img :src="currentImage" alt="Auth Image" />
@@ -310,17 +310,19 @@ export default {
 
 .overlay-text {
   position: absolute;
-  top: 80%;
-  left: 70%;
+  top: 75%;
+  left: 65%;
   transform: translate(-18%, -85%);
   color: #333;
-  font-size: 2rem;
+  font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 2.5rem;
   font-weight: bold;
   background: rgba(255, 255, 255, 0.8);
   padding: 10px 20px;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   text-align: center;
+  letter-spacing: 1px;
 }
 
 .auth-container {

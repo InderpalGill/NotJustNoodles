@@ -6,6 +6,7 @@
                 v-model="foodQuery"
                 placeholder="Enter Food Name/Description"
                 @input="searchByFoodName"
+                style="font-size: 24px"
             />
         </div>
         <ul v-if="foodSuggestions && foodSuggestions.length" class="foodSuggestions">
@@ -151,9 +152,14 @@ export default {
 }
 
 .title {
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans",
+    Arial, sans-serif;
   font-size: 24px;
+  align-items: center;
+
   font-weight: bold;
-  margin-bottom: 10px;
+  text-align: center;
+  color: var(--vp-c-text);
 }
 
 input[type="text"] {

@@ -1,7 +1,7 @@
 ```vue
 <template>
   <div class="open-food-facts">
-    <div v-if="!addingToList" class="title">Search for a Product by Barcode</div>
+    <div v-if="!addingToList" class="title">Search for Food by Barcode</div>
 
     <div v-if="!addingToList" class="search-section">
       <input
