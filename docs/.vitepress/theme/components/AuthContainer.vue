@@ -1,34 +1,47 @@
 <template>
   <div class="auth-container">
-    <div v-if="!user">
-      <div class="auth-forms">
-        <div class="register-form">
-          <div class="form-title">Register</div>
-          <input type="email" v-model="registerEmail" placeholder="Email" />
-          <input type="password" v-model="registerPassword" placeholder="Password" />
-          <button @click="register">Register</button>
-          <p v-if="registerError" class="error">{{ registerError }}</p>
+    <div v-if="!user" class="auth-content">
+      <div class="auth-image">
+        <img :src="currentImage" alt="Auth Image" />
+      </div>
+      <div class="auth-form-container">
+        <div class="auth-forms">
+          <div v-if="isLogin" class="login-form">
+            <div class="form-title">Login</div>
+            <input type="email" v-model="loginEmail" placeholder="Email" />
+            <input type="password" v-model="loginPassword" placeholder="Password" />
+            <button @click="login">Login</button>
+            <p v-if="loginError" class="error">{{ loginError }}</p>
+          </div>
+          <div v-else class="register-form">
+            <div class="form-title">Register</div>
+            <input type="email" v-model="registerEmail" placeholder="Email" />
+            <input type="password" v-model="registerPassword" placeholder="Password" />
+            <button @click="register">Register</button>
+            <p v-if="registerError" class="error">{{ registerError }}</p>
+          </div>
         </div>
-        <div class="login-form">
-          <div class="form-title">Login</div>
-          <input type="email" v-model="loginEmail" placeholder="Email" />
-          <input type="password" v-model="loginPassword" placeholder="Password" />
-          <button @click="login">Login</button>
-          <p v-if="loginError" class="error">{{ loginError }}</p>
+        <div class="toggle-auth">
+          <p>
+            <span v-if="isLogin">Don't have an account yet? </span>
+            <span v-else>Already have an account? </span>
+            <a href="#" @click.prevent="toggleAuth">
+              {{ isLogin ? "Register here" : "Login here" }}
+            </a>
+          </p>
         </div>
       </div>
     </div>
+
     <div v-else class="authenticated-content">
       <button class="logout-button" @click="logout">Logout</button>
+      <p v-if="addError" class="error">{{ addError }}</p>
+      <p v-if="addSuccess" class="success">{{ addSuccess }}</p>
+      <!-- Use Background and handle events from it -->
+      <Background @add-product="handleAddProduct" />
       <button class="debug-button" @click="fetchUserProducts">
         Debug: List User Products
       </button>
-
-      <!-- Use Background and handle events from it -->
-      <Background @add-product="handleAddProduct" />
-
-      <p v-if="addError" class="error">{{ addError }}</p>
-      <p v-if="addSuccess" class="success">{{ addSuccess }}</p>
 
       <div v-if="userProducts.length" class="user-products">
         <h3>User Products:</h3>
@@ -41,7 +54,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { auth, db } from "../firebase";
 import {
   onAuthStateChanged,
@@ -67,8 +80,13 @@ export default {
     const registerError = ref("");
     const addError = ref("");
     const addSuccess = ref("");
-    const userProducts = ref("");
+    const userProducts = ref([]);
     const fetchError = ref("");
+    const isLogin = ref(true); // State to toggle between login and register
+
+    const currentImage = computed(() =>
+      isLogin.value ? "/streak-saver/undraw_checking-boxes_j0im.svg" : "/streak-saver/undraw_check-boxes_ewf2.svg"
+    );
 
     onMounted(() => {
       onAuthStateChanged(auth, (currentUser) => {
@@ -76,6 +94,17 @@ export default {
         console.log("Auth State Changed: ", currentUser);
       });
     });
+
+    const toggleAuth = () => {
+      isLogin.value = !isLogin.value;
+      // Optionally reset form fields and errors when toggling
+      loginEmail.value = "";
+      loginPassword.value = "";
+      registerEmail.value = "";
+      registerPassword.value = "";
+      loginError.value = "";
+      registerError.value = "";
+    };
 
     const register = async () => {
       try {
@@ -159,7 +188,7 @@ export default {
           id: doc.id,
           ...doc.data(),
         }));
-        userProducts.value = JSON.stringify(productsList, null, 2);
+        userProducts.value = productsList;
         console.log("Fetched user products:", productsList);
         fetchError.value = "";
       } catch (error) {
@@ -185,6 +214,9 @@ export default {
       userProducts,
       fetchUserProducts,
       fetchError,
+      isLogin,
+      toggleAuth,
+      currentImage,
     };
   },
 };
@@ -196,15 +228,47 @@ export default {
   flex-direction: column;
   align-items: center;
   padding: 40px;
-  min-width: 100%;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.auth-content {
+  display: flex;
+  flex-direction: row;
+  gap: 50px;
+  width: 100%;
+  max-width: 1000px;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
+  border-radius: 16px;
+  border: 1px solid var(--vp-c-divider);
+  background-color: var(--vp-c-bg-soft);
+  box-shadow: inset 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.auth-image img {
+  max-width: 100%;
+  height: auto;
+}
+
+.auth-form-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .auth-forms {
-  display: flex;
-  gap: 50px;
   width: 100%;
-  max-width: 800px;
-  justify-content: center;
+  max-width: 400px;
 }
 
 .form-title {
@@ -219,12 +283,12 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: 300px;
+  width: 100%;
   border-radius: 16px;
   border: 1px solid var(--vp-c-divider);
   background-color: var(--vp-c-bg-soft);
-  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
-  margin: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  margin: 20px 0;
   padding: 20px;
 }
 
@@ -254,6 +318,22 @@ button:hover {
   color: var(--vp-button-brand-hover-text);
 }
 
+.toggle-auth {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.toggle-auth a {
+  color: var(--vp-button-brand-bg);
+  text-decoration: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.toggle-auth a:hover {
+  text-decoration: underline;
+}
+
 .logout-button {
   position: absolute;
   top: 20px;
@@ -273,11 +353,13 @@ button:hover {
 .error {
   color: var(--vp-c-red-1);
   font-size: 14px;
+  text-align: center;
 }
 
 .success {
   color: green;
   font-size: 14px;
+  text-align: center;
 }
 
 .authenticated-content {
@@ -305,5 +387,21 @@ button:hover {
 .user-products pre {
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .auth-content {
+    flex-direction: column;
+  }
+
+  .auth-image,
+  .auth-form-container {
+    width: 100%;
+  }
+
+  .auth-image {
+    margin-bottom: 20px;
+  }
 }
 </style>
