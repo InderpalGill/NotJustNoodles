@@ -24,44 +24,17 @@
           <div class="product-brand">
             {{ product.brands }}
           </div>
+          <button class="add-to-list-button">Add to List</button>
         </div>
       </div>
       <div class="product-details">
-        <div class="detail-card">
-          <div class="card-title" @click="toggleAllergens">
-            Allergens <span v-if="!showAllergens">(click to expand)</span>
-            <span v-else>(click to collapse)</span>
-          </div>
-          <div class="card-content" v-show="showAllergens">
-            <div v-if="allergensList.length">
-              <span class="pill" v-for="(allergen, index) in allergensList" :key="index">
-                {{ allergen }}
-              </span>
-            </div>
-            <div v-else>None</div>
-          </div>
-        </div>
-        <div class="detail-card">
-          <div class="card-title" @click="toggleIngredients">
-            Ingredients <span v-if="!showIngredients">(click to expand)</span>
-            <span v-else>(click to collapse)</span>
-          </div>
-          <div class="card-content" v-show="showIngredients">
-            <div v-if="ingredientsList.length">
-              <span
-                class="pill"
-                v-for="(ingredient, index) in ingredientsList"
-                :key="index"
-              >
-                {{ ingredient }}
-              </span>
-            </div>
-            <div v-else>No ingredients listed.</div>
-          </div>
-        </div>
         <div class="detail-card nutrition-facts">
-          <div class="card-title">Nutrition Facts</div>
-          <div class="card-content">
+          <div class="card-title" @click="toggleNutritionFacts">
+            Nutrition Facts
+            <span v-if="!showNutritionFacts">(click to expand)</span>
+            <span v-else>(click to collapse)</span>
+          </div>
+          <div class="card-content" v-show="showNutritionFacts">
             <table class="nutrition-table">
               <thead>
                 <tr>
@@ -83,42 +56,11 @@
             </table>
           </div>
         </div>
-        <!-- Additional Nutrient Details Section -->
-        <div
-          class="detail-card additional-nutrient-details"
-          v-if="showAdditionalNutrients"
-        >
-          <div class="card-title" @click="toggleAdditionalNutrients">
-            Additional Nutrient Details
-            <span v-if="!showAdditionalNutrients">(click to expand)</span>
-            <span v-else>(click to collapse)</span>
-          </div>
-          <div class="card-content" v-show="showAdditionalNutrients">
-            <table class="nutrition-table">
-              <thead>
-                <tr>
-                  <th>Nutrient</th>
-                  <th>Per 100g</th>
-                  <th>Per Serving</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(nutrient, index) in additionalNutrientsList" :key="index">
-                  <td>{{ nutrient.name }}</td>
-                  <td>{{ nutrient.value_100g }} {{ nutrient.unit }}</td>
-                  <td v-if="nutrient.value_serving">
-                    {{ nutrient.value_serving }} {{ nutrient.unit }}
-                  </td>
-                  <td v-else>N/A</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
       </div>
-      <div class="debug-info">
+      <div class="detail-card debug-info">
         <div class="card-title" @click="toggleDebug">
-          Debug Information <span v-if="!showDebug">(click to expand)</span>
+          Debug Information
+          <span v-if="!showDebug">(click to expand)</span>
           <span v-else>(click to collapse)</span>
         </div>
         <div class="card-content" v-show="showDebug">
@@ -138,29 +80,11 @@ export default {
       product: null,
       loading: false,
       error: null,
-      showAllergens: false,
-      showIngredients: false,
       showDebug: false,
-      showAdditionalNutrients: false,
+      showNutritionFacts: false,
     };
   },
   computed: {
-    allergensList() {
-      if (!this.product || !this.product.allergens_tags) {
-        return [];
-      }
-      return this.product.allergens_tags.map((tag) =>
-        tag.replace("en:", "").replace("-", " ").toUpperCase()
-      );
-    },
-    ingredientsList() {
-      if (!this.product || !this.product.ingredients_text) {
-        return [];
-      }
-      return this.product.ingredients_text
-        .split(",")
-        .map((ingredient) => ingredient.trim());
-    },
     // Main nutriments list based on common nutrients
     nutrimentsList() {
       if (!this.product || !this.product.nutriments) {
@@ -268,17 +192,11 @@ export default {
     formatNutriment(key) {
       return key.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
     },
-    toggleAllergens() {
-      this.showAllergens = !this.showAllergens;
-    },
-    toggleIngredients() {
-      this.showIngredients = !this.showIngredients;
-    },
     toggleDebug() {
       this.showDebug = !this.showDebug;
     },
-    toggleAdditionalNutrients() {
-      this.showAdditionalNutrients = !this.showAdditionalNutrients;
+    toggleNutritionFacts() {
+      this.showNutritionFacts = !this.showNutritionFacts;
     },
     getServingValue(nutriments, key) {
       // Check if serving size is available
@@ -315,36 +233,48 @@ export default {
 
 .search-section {
   display: flex;
-  /* Remove padding and gap to allow button to touch the edge */
   padding: 0;
   gap: 0;
   background-color: var(--vp-c-bg-alt);
   border-radius: 8px;
   border: 1px solid var(--vp-c-divider);
-  overflow: hidden; /* Ensure rounded corners are maintained */
+  overflow: hidden;
 }
 
 input[type="text"] {
   flex: 1;
   padding: 12px;
-  border: none; /* Remove default border to merge with button */
+  border: none;
   background-color: var(--vp-c-bg);
-  border-radius: 8px 0 0 8px; /* Rounded corners on the left */
+  border-radius: 8px 0 0 8px;
   font-size: 16px;
 }
 
 button {
   padding: 12px 20px;
-  border: none; /* Remove default border */
+  border: none;
   background-color: var(--vp-button-brand-bg);
   color: var(--vp-button-brand-text);
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  border-radius: 0 8px 8px 0; /* Rounded corners on the right */
+  border-radius: 0 8px 8px 0;
 }
 
 button:hover {
+  background-color: var(--vp-button-brand-hover-bg);
+  color: var(--vp-button-brand-hover-text);
+}
+
+.add-to-list-button {
+  margin-top: 10px;
+  width: 100%;
+  border-radius: 8px;
+  background-color: var(--vp-button-brand-bg);
+  color: var(--vp-button-brand-text);
+}
+
+.add-to-list-button:hover {
   background-color: var(--vp-button-brand-hover-bg);
   color: var(--vp-button-brand-hover-text);
 }
@@ -372,12 +302,14 @@ button:hover {
 
 .product-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 20px;
 }
 
 .product-title-brand {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-name {
@@ -455,15 +387,16 @@ button:hover {
   background-color: var(--vp-c-bg-soft);
 }
 
-.debug-info {
-  background-color: var(--vp-c-bg);
-  border-radius: 8px;
-  border: 1px solid var(--vp-c-divider);
-  padding-top: 15px;
+.debug-info .card-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  cursor: pointer;
+  user-select: none;
 }
 
-.debug-info .card-title {
-  cursor: pointer;
+.debug-info .card-content {
+  font-size: 16px;
 }
 
 .debug-info pre {
@@ -471,9 +404,9 @@ button:hover {
   padding: 10px;
   border-radius: 8px;
   overflow-x: auto;
+  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
 }
 
-/* Additional Styles for Collapsible Sections */
 .additional-nutrient-details {
   margin-top: 10px;
 }
