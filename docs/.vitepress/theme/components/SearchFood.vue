@@ -1,12 +1,12 @@
 <template>
   <div class="open-food-facts">
     <div class="title">Search for a Product by Barcode</div>
-    <div>
+    <div id="input">
       <input
         v-model="barcode"
         placeholder="Enter barcode"
         @keyup.enter="searchByBarcode"
-      />
+        style="font-size: 24px;"/>
     </div>
     <button @click="searchByBarcode">Search</button>
 
@@ -94,12 +94,14 @@ export default {
   background-color: var(--vp-c-bg-soft);
   box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
   max-width: 600px;
-  margin: 0 auto;
+  margin: 10 auto;
   font-family: Arial, sans-serif;
 }
 
 .title {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
   font-size: 24px;
+  align-items: center;
   font-weight: bold;
   margin-bottom: 10px;
 }
@@ -140,4 +142,8 @@ button {
   height: auto;
   margin-top: 10px;
 }
+
+
+
+
 </style>

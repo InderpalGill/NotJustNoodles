@@ -14,6 +14,8 @@ import { JSONTable,
          ImageGallery
         } from '@cynber/vitepress-valence'
 import SearchFood from './components/SearchFood.vue'
+import Background from './components/Background.vue'
+import MacroCharts from './components/MacroCharts.vue'
 
 export default {
   extends: DefaultTheme,
@@ -32,5 +34,7 @@ export default {
     app.component('VerticalCard', VerticalCard)
     app.component('ImageGallery', ImageGallery)
     app.component('SearchFood', SearchFood)
+    app.component('Background', Background)
+    app.component('MacroCharts', MacroCharts)
   }
 } satisfies Theme

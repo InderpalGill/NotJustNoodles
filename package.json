@@ -10,6 +10,7 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
-    "@cynber/vitepress-valence": "^0.1.2"
+    "@cynber/vitepress-valence": "^0.1.2",
+    "chart.js": "^4.4.7"
   }
 }
