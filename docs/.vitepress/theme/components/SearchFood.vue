@@ -224,7 +224,7 @@ export default {
   flex-direction: column;
   gap: 1.5rem;
   padding: 24px;
-  margin: 24px auto;
+  /* margin: 24px auto; */
   border-radius: 16px;
   border: 1px solid var(--vp-c-divider);
   background-color: var(--vp-c-bg-soft);

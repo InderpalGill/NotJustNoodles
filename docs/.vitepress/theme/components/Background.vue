@@ -13,6 +13,7 @@ import SearchFood from "./SearchFood.vue";
         <SearchFoodName @add-product="$emit('add-product', $event)" />
       </div>
       <div id="macro-charts">
+        <ProductsList />
         <MacroCharts />
       </div>
     </div>
@@ -52,20 +53,24 @@ import SearchFood from "./SearchFood.vue";
 }
 
 .search-food {
-  width: 55%; /* Left column takes up half the width */
-  max-width: 600px; /* Optional: Limit the max width */
+  width: 55%;
+  max-width: 600px;
   padding: 20px;
   margin: 20px;
-  background-color: #4e4c49; /* Optional: Background color for visual separation */
-  border-radius: 8px; /* Optional: Rounded corners */
+  background-color: var(--vp-c-bg-alt);
+  border-radius: 16px;
+}
+
+.search-food > *:not(:last-child) {
+  margin-bottom: 20px; /* Add spacing between child elements */
 }
 
 #macro-charts {
-  width: 50%; /* Right column takes up half the width */
-  max-width: 500px; /* Optional: Limit the max width */
+  width: 50%;
+  max-width: 500px;
   padding: 20px;
-  background-color: #4e4c49; /* Optional: Background color for visual separation */
-  border-radius: 8px; /* Optional: Rounded corners */
   margin: 20px;
+  background-color: var(--vp-c-bg-alt);
+  border-radius: 16px;
 }
 </style>

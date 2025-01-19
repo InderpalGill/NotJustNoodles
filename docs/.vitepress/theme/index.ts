@@ -19,6 +19,7 @@ import SearchFoodName from './components/SearchFoodName.vue'
 import Background from './components/Background.vue'
 import MacroCharts from './components/MacroCharts.vue'
 import AuthContainer from './components/AuthContainer.vue'
+import ProductsList from './components/ProductsList.vue'
 
 
 
@@ -44,5 +45,6 @@ export default {
     app.component('Background', Background)
     app.component('MacroCharts', MacroCharts)
     app.component('AuthContainer', AuthContainer)
+    app.component('ProductsList', ProductsList)
   }
 } satisfies Theme
