@@ -19,7 +19,7 @@
     <div v-if="showProductList" class="product-details">
       <div v-if="products.length">
         <div class="product-pill" v-for="product in products" :key="product.id">
-          {{ product.product_name }}
+          {{ product.product_name || product.food_description }}
         </div>
       </div>
       <div v-else>No products found for this date.</div>
@@ -84,6 +84,7 @@ export default {
       );
       const snapshot = await getDocs(productsCollection);
       products.value = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      console.log(products.value);
     };
 
     // Change the date by a given number of days
