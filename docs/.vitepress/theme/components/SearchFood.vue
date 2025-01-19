@@ -24,8 +24,7 @@
           <div class="product-brand">
             {{ product.brands }}
           </div>
-          <!-- Bind the addToList method to the button -->
-          <button class="add-to-list-button" @click="addToList">Add to List</button>
+          <button class="add-to-list-button" @click="emitAddProduct">Add to List</button>
         </div>
       </div>
       <div class="product-details">
@@ -77,7 +76,7 @@ import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 
 export default {
-  name: "OpenFoodFactsBarcode",
+  name: "SearchFood",
   data() {
     return {
       barcode: "",
@@ -163,6 +162,7 @@ export default {
       this.product = null;
 
       try {
+        console.log("Searching for barcode:", this.barcode);
         const response = await fetch(
           `https://world.openfoodfacts.org/api/v0/product/${this.barcode}.json`,
           {
@@ -180,8 +180,10 @@ export default {
 
         if (data.status === 1 && data.product) {
           this.product = data.product;
+          console.log("Product found:", this.product);
         } else {
           this.error = "No product found with this barcode.";
+          console.warn("No product found for barcode:", this.barcode);
         }
       } catch (err) {
         this.error = "An error occurred while fetching data.";
@@ -205,30 +207,14 @@ export default {
       }
       return null;
     },
-    async addToList() {
+    emitAddProduct() {
       if (!this.product) {
         this.error = "No product to add.";
+        console.error("Emit add-product without product data.");
         return;
       }
-
-      try {
-        const productsCollection = collection(db, "products");
-        const productData = {
-          barcode: this.barcode,
-          product_name: this.product.product_name || "No product name available",
-          brands: this.product.brands || "Unknown",
-          image_url: this.product.image_url || "",
-          nutriments: this.product.nutriments || {},
-          added_at: new Date(),
-        };
-        const docRef = await addDoc(productsCollection, productData);
-        alert(`Product added to list with ID: ${docRef.id}`);
-        this.barcode = "";
-        this.product = null;
-      } catch (error) {
-        console.error("Error adding document: ", error);
-        this.error = "Failed to add product to the list.";
-      }
+      // console.log("Product data being emitted:", JSON.stringify(this.product, null, 2)); // Log complete product data
+      this.$emit("add-product", this.product);
     },
   },
 };
@@ -313,6 +299,11 @@ button:hover {
 
 .error {
   color: var(--vp-c-warning-1);
+}
+
+.success {
+  color: green;
+  font-size: 14px;
 }
 
 .product-info {
@@ -434,5 +425,40 @@ button:hover {
 
 .additional-nutrient-details {
   margin-top: 10px;
+}
+
+.logout-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.debug-button {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.user-products {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 800px;
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.user-products h3 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.user-products pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 </style>
