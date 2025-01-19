@@ -66,12 +66,49 @@
                 <tr>
                   <th>Nutrient</th>
                   <th>Per 100g</th>
+                  <th>Per Serving</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(nutrient, index) in nutrimentsList" :key="index">
+                <tr v-for="(nutrient, index) in nutrimentsDetailedList" :key="index">
                   <td>{{ nutrient.name }}</td>
-                  <td>{{ nutrient.value }} {{ nutrient.unit }}</td>
+                  <td>{{ nutrient.value_100g }} {{ nutrient.unit }}</td>
+                  <td v-if="nutrient.value_serving">
+                    {{ nutrient.value_serving }} {{ nutrient.unit }}
+                  </td>
+                  <td v-else>N/A</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Additional Nutrient Details Section -->
+        <div
+          class="detail-card additional-nutrient-details"
+          v-if="showAdditionalNutrients"
+        >
+          <div class="card-title" @click="toggleAdditionalNutrients">
+            Additional Nutrient Details
+            <span v-if="!showAdditionalNutrients">(click to expand)</span>
+            <span v-else>(click to collapse)</span>
+          </div>
+          <div class="card-content" v-show="showAdditionalNutrients">
+            <table class="nutrition-table">
+              <thead>
+                <tr>
+                  <th>Nutrient</th>
+                  <th>Per 100g</th>
+                  <th>Per Serving</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(nutrient, index) in additionalNutrientsList" :key="index">
+                  <td>{{ nutrient.name }}</td>
+                  <td>{{ nutrient.value_100g }} {{ nutrient.unit }}</td>
+                  <td v-if="nutrient.value_serving">
+                    {{ nutrient.value_serving }} {{ nutrient.unit }}
+                  </td>
+                  <td v-else>N/A</td>
                 </tr>
               </tbody>
             </table>
@@ -79,8 +116,13 @@
         </div>
       </div>
       <div class="debug-info">
-        <div class="card-title">Nutrition Facts (Debug)</div>
-        <pre>{{ product.nutriments }}</pre>
+        <div class="card-title" @click="toggleDebug">
+          Debug Information <span v-if="!showDebug">(click to expand)</span>
+          <span v-else>(click to collapse)</span>
+        </div>
+        <div class="card-content" v-show="showDebug">
+          <pre>{{ debugInfo }}</pre>
+        </div>
       </div>
     </div>
   </div>
@@ -97,6 +139,8 @@ export default {
       error: null,
       showAllergens: false,
       showIngredients: false,
+      showDebug: false,
+      showAdditionalNutrients: false,
     };
   },
   computed: {
@@ -116,6 +160,7 @@ export default {
         .split(",")
         .map((ingredient) => ingredient.trim());
     },
+    // Main nutriments list based on common nutrients
     nutrimentsList() {
       if (!this.product || !this.product.nutriments) {
         return [];
@@ -145,6 +190,39 @@ export default {
           }
         })
         .filter((nutrient) => nutrient !== undefined);
+    },
+    // Detailed nutriments list including all available nutrients
+    nutrimentsDetailedList() {
+      if (!this.product || !this.product.nutriments) {
+        return [];
+      }
+      const nutriments = this.product.nutriments;
+      const nutrients = Object.keys(nutriments)
+        .filter((key) => key.endsWith("_100g") && !key.includes("unit"))
+        .map((key) => key.replace("_100g", ""));
+
+      return nutrients.map((nutrientKey) => {
+        const value_100g = nutriments[`${nutrientKey}_100g`];
+        const unit = nutriments[`${nutrientKey}_unit`] || "g";
+        const value_serving = this.getServingValue(nutriments, nutrientKey);
+        return {
+          name: this.formatNutriment(nutrientKey),
+          value_100g,
+          unit,
+          value_serving,
+        };
+      });
+    },
+    // Additional nutrients not listed in the main nutriments list
+    additionalNutrientsList() {
+      const mainNutrients = this.nutrimentsList.map((n) => n.name.toLowerCase());
+      const detailedNutrients = this.nutrimentsDetailedList;
+      return detailedNutrients.filter(
+        (n) => !mainNutrients.includes(n.name.toLowerCase())
+      );
+    },
+    debugInfo() {
+      return JSON.stringify(this.product, null, 2);
     },
   },
   methods: {
@@ -194,6 +272,19 @@ export default {
     },
     toggleIngredients() {
       this.showIngredients = !this.showIngredients;
+    },
+    toggleDebug() {
+      this.showDebug = !this.showDebug;
+    },
+    toggleAdditionalNutrients() {
+      this.showAdditionalNutrients = !this.showAdditionalNutrients;
+    },
+    getServingValue(nutriments, key) {
+      // Check if serving size is available
+      if (this.product && this.product.serving_size && nutriments[`${key}_serving`]) {
+        return nutriments[`${key}_serving`];
+      }
+      return null;
     },
   },
 };
@@ -255,11 +346,11 @@ button:hover {
 .error {
   text-align: center;
   font-size: 16px;
-  color: white;
+  color: var(--vp-c-warning-1);
 }
 
 .error {
-  color: #ffdddd;
+  color: var(--vp-c-warning-1);
 }
 
 .product-info {
@@ -307,10 +398,10 @@ button:hover {
 }
 
 .detail-card {
-  border: 1px solid #cccccc;
+  border: 1px solid var(--vp-c-divider);
   border-radius: 12px;
   padding: 15px;
-  background-color: #fafafa;
+  background-color: var(--vp-c-bg-soft);
 }
 
 .card-title {
@@ -358,14 +449,23 @@ button:hover {
 }
 
 .debug-info {
-  border-top: 1px solid #cccccc;
+  border-top: 1px solid var(--vp-c-divider);
   padding-top: 15px;
 }
 
+.debug-info .card-title {
+  cursor: pointer;
+}
+
 .debug-info pre {
-  background-color: #eaeaea;
+  background-color: var(--vp-c-bg-soft);
   padding: 10px;
   border-radius: 8px;
   overflow-x: auto;
+}
+
+/* Additional Styles for Collapsible Sections */
+.additional-nutrient-details {
+  margin-top: 10px;
 }
 </style>
