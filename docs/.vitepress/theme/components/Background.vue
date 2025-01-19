@@ -10,7 +10,7 @@ import SearchFood from "./SearchFood.vue";
     <div class="layout">
       <div class="search-food">
         <SearchFood @add-product="$emit('add-product', $event)" />
-        <SearchFood @add-product="$emit('add-product', $event)" />
+        <SearchFoodName @add-product="$emit('add-product', $event)" />
       </div>
       <div id="macro-charts">
         <MacroCharts />

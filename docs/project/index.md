@@ -3,8 +3,8 @@ layout: home
 ---
 
 
-<SearchFood />
-<SearchFoodName />
+<!-- <SearchFood />
+<SearchFoodName /> -->
 <!-- <Background /> -->
 
 <AuthContainer />
