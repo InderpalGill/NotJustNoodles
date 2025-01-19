@@ -213,7 +213,7 @@ export default {
         console.error("Emit add-product without product data.");
         return;
       }
-      console.log("Emitting add-product event with product data:", this.product);
+      // console.log("Product data being emitted:", JSON.stringify(this.product, null, 2)); // Log complete product data
       this.$emit("add-product", this.product);
     },
   },

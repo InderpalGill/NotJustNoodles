@@ -120,14 +120,13 @@ export default {
     const handleAddProduct = async (product) => {
       if (!user.value) {
         addError.value = "You must be logged in to add products.";
-        console.error("Add product attempt without authenticated user.");
         return;
       }
       try {
-        console.log("Adding product for user:", user.value.uid);
+        // console.log("Received product data:", JSON.stringify(product, null, 2)); // Log complete product data
         const productsCollection = collection(db, "users", user.value.uid, "products");
         const productData = {
-          barcode: product.barcode,
+          barcode: product.barcode || "Unknown",
           product_name: product.product_name || "No product name available",
           brands: product.brands || "Unknown",
           image_url: product.image_url || "",
@@ -135,12 +134,12 @@ export default {
           added_at: new Date(),
         };
         const docRef = await addDoc(productsCollection, productData);
-        console.log("Product added with ID:", docRef.id);
+        // console.log("Product added with ID:", docRef.id);
         addSuccess.value = "Product added successfully!";
         addError.value = "";
       } catch (error) {
         addError.value = "Failed to add product to the list.";
-        console.error("Error adding document:", error);
+        // console.error("Error adding document:", error);
       }
     };
 
