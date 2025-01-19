@@ -72,7 +72,7 @@
         </button> -->
       </div>
       <!-- Use Background and handle events from it -->
-      <Background @add-product="handleAddProduct" />
+      <Background :userId="user?.uid" @add-product="handleAddProduct" />
 
       <!-- <div v-if="userProducts.length" class="user-products">
         <h3>User Products:</h3>
@@ -117,8 +117,8 @@ export default {
 
     const currentImage = computed(() =>
       isLogin.value
-        ? "/streak-saver/undraw_checking-boxes_j0im.svg"
-        : "/streak-saver/undraw_check-boxes_ewf2.svg"
+        ? "/not-just-noodles/undraw_checking-boxes_j0im.svg"
+        : "/not-just-noodles/undraw_check-boxes_ewf2.svg"
     );
 
     onMounted(() => {

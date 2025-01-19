@@ -1,98 +1,170 @@
 <template>
   <div class="products-list">
     <div class="date-navigation">
-      <Icon icon="mingcute:left-fill" width="24" height="24" @click="shiftDate(-1)" />
-      <span class="current-date" @click="showDatePicker">{{ formattedDate }}</span>
-      <Icon icon="mingcute:right-fill" width="24" height="24" @click="shiftDate(1)" />
+      <button @click="changeDate(-1)">
+        <Icon icon="mingcute:left-fill" width="24" height="24" />
+      </button>
+      <span class="current-date">{{ formattedDate }}</span>
+      <button @click="changeDate(1)">
+        <Icon icon="mingcute:right-fill" width="24" height="24" />
+      </button>
     </div>
 
-    <div v-if="products.length" class="products-info">
-      <div class="product-count" @click="toggleProducts">
-        <span>{{ products.length }} products listed for {{ formattedDate }}</span>
-        <span v-if="expanded" class="arrow">▼</span>
-        <span v-else class="arrow">▲</span>
-      </div>
+    <div class="button-bar">
+      <button class="refresh-button" @click="fetchProducts">Refresh</button>
+      <button class="jump-to-today-button" @click="jumpToToday">Jump to Today</button>
+      <button class="date-picker-button" @click="toggleDatePicker">Pick Date</button>
+    </div>
 
-      <div v-if="expanded" class="product-list">
-        <div v-for="product in products" :key="product.id" class="product-item">
-          {{ product.product_name }} (Barcode: {{ product.barcode }})
+    <div class="product-summary" @click="toggleProductList">
+      <span>
+        {{ products.length }} products found for this date. Click to view details.
+      </span>
+    </div>
+
+    <div v-if="showProductList" class="product-details">
+      <div v-if="products.length">
+        <div class="product-pill" v-for="product in products" :key="product.id">
+          {{ product.product_name || product.food_description }}
+        </div>
+        <div class="summary-nutrients">
+          <div>Total Carbs: {{ totalNutrients.totalCarbs.toFixed(2) }}g</div>
+          <div>Total Protein: {{ totalNutrients.totalProtein.toFixed(2) }}g</div>
         </div>
       </div>
+      <div v-else>No products found for this date.</div>
     </div>
-    <div v-else>
-      <p>No products listed for {{ formattedDate }}</p>
-    </div>
+
+    <!-- Date Picker Modal -->
+    <input
+      type="date"
+      v-model="datePicker"
+      v-if="showDatePicker"
+      @change="setDate"
+      class="date-picker"
+    />
   </div>
 </template>
 
 <script>
-import { ref, computed } from "vue";
-import { db } from "../firebase"; // Import your Firebase instance
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { Icon } from "@iconify/vue"; // Import the icon component
+import { ref, computed, onMounted } from "vue";
+import { db } from "../firebase";
+import { collection, getDocs } from "firebase/firestore";
+import { auth } from "../firebase";
+import { Icon } from "@iconify/vue";
 
 export default {
   name: "ProductsList",
-  components: {
-    Icon,
-  },
+  components: { Icon },
   setup() {
-    const currentDate = ref(new Date());
-    const expanded = ref(false);
     const products = ref([]);
+    const showProductList = ref(false);
+    const showDatePicker = ref(false);
+    const datePicker = ref("");
+    const currentDate = ref(new Date());
 
-    // Format the date as YYYY-MM-DD for display
     const formattedDate = computed(() => {
-      return currentDate.value.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+      return currentDate.value.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
     });
 
-    // Function to fetch products for the current date
+    const totalNutrients = computed(() => {
+      let totalCarbs = 0;
+      let totalProtein = 0;
+
+      products.value.forEach((product) => {
+        if (product.nutriments) {
+          const carbsPer100g = product.nutriments.carbohydrates_100g || 0;
+          const proteinPer100g = product.nutriments.proteins_100g || 0;
+          const weight = product.food_weight || 100;
+
+          totalCarbs += (carbsPer100g / 100) * weight;
+          totalProtein += (proteinPer100g / 100) * weight;
+        }
+
+        if (product.nutrient_info) {
+          product.nutrient_info.forEach((nutrient) => {
+            if (nutrient.nutrient_web_name === "Carbohydrate") {
+              totalCarbs += nutrient.nutrient_value;
+            } else if (nutrient.nutrient_web_name === "Protein") {
+              totalProtein += nutrient.nutrient_value;
+            }
+          });
+        }
+      });
+
+      return {
+        totalCarbs,
+        totalProtein,
+      };
+    });
+
     const fetchProducts = async () => {
-      const user = "YOUR_USER_ID"; // Replace with actual user ID
+      if (!auth.currentUser) return;
+      const userId = auth.currentUser.uid;
+      const dateString = currentDate.value.toISOString().split("T")[0];
+
       const productsCollection = collection(
         db,
         "users",
-        user,
+        userId,
         "dates",
-        formattedDate.value,
+        dateString,
         "products"
       );
-      const q = query(
-        productsCollection,
-        where("added_at", ">=", currentDate.value.setHours(0, 0, 0, 0)),
-        where("added_at", "<=", currentDate.value.setHours(23, 59, 59, 999))
-      );
-      const querySnapshot = await getDocs(q);
-
-      products.value = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const snapshot = await getDocs(productsCollection);
+      products.value = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      console.log(products.value);
     };
 
-    // Shift the date by days and fetch the updated product list
-    const shiftDate = async (days) => {
-      currentDate.value.setDate(currentDate.value.getDate() + days);
-      await fetchProducts();
+    const changeDate = (days) => {
+      const newDate = new Date(currentDate.value);
+      newDate.setDate(newDate.getDate() + days);
+      currentDate.value = newDate;
+      fetchProducts();
     };
 
-    // Show calendar date picker function (stub for actual implementation)
-    const showDatePicker = () => {
-      // Implement a date picker or similar functionality here
-      console.log("Show date picker");
+    const toggleProductList = () => {
+      showProductList.value = !showProductList.value;
     };
 
-    const toggleProducts = () => {
-      expanded.value = !expanded.value;
+    const toggleDatePicker = () => {
+      showDatePicker.value = !showDatePicker.value;
     };
 
-    // Initial fetch of products for the current date
-    fetchProducts();
+    const setDate = () => {
+      if (datePicker.value) {
+        currentDate.value = new Date(datePicker.value);
+        fetchProducts();
+      }
+      showDatePicker.value = false;
+    };
+
+    const jumpToToday = () => {
+      currentDate.value = new Date();
+      fetchProducts();
+    };
+
+    onMounted(() => {
+      fetchProducts();
+    });
 
     return {
-      formattedDate,
       products,
-      expanded,
-      shiftDate,
+      showProductList,
+      formattedDate,
+      totalNutrients, // Ensure totalNutrients is included here
+      fetchProducts,
+      changeDate,
+      toggleProductList,
       showDatePicker,
-      toggleProducts,
+      toggleDatePicker,
+      datePicker,
+      setDate,
+      jumpToToday,
     };
   },
 };
@@ -101,43 +173,99 @@ export default {
 <style scoped>
 .products-list {
   padding: 20px;
-  border-radius: 16px;
-  border: 1px solid var(--vp-c-divider);
   background-color: var(--vp-c-bg-soft);
-  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  margin-bottom: 20px;
 }
 
 .date-navigation {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .current-date {
-  font-size: 18px;
+  margin: 0 10px;
+  font-size: 24px;
   font-weight: bold;
+}
+
+.product-summary {
   cursor: pointer;
+  font-size: 18px;
+  font-weight: 500;
+  text-align: center;
 }
 
-.products-info {
-  cursor: pointer;
+.product-details {
+  margin-top: 10px;
+  background-color: var(--vp-c-bg);
+  border-radius: 8px;
+  padding: 10px;
 }
 
-.product-count {
-  font-size: 16px;
-  margin: 10px 0;
+.product-pill {
+  display: inline-block;
+  background-color: var(--vp-button-alt-bg);
+  color: var(--vp-button-alt-text);
+  border-radius: 12px;
+  padding: 5px 10px;
+  margin: 5px;
+  font-size: 14px;
 }
 
-.product-list {
+.summary-nutrients {
   margin-top: 10px;
 }
 
-.product-item {
-  padding: 5px 0;
+.button-bar {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  margin-bottom: 10px;
 }
-.arrow {
-  margin-left: 5px;
+
+.refresh-button,
+.date-picker-button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  border: none;
+  background-color: var(--vp-button-alt-bg);
+  color: var(--vp-button-alt-text);
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--vp-c-divider);
+  transition: background-color 0.3s ease;
+}
+
+.refresh-button:hover,
+.date-picker-button:hover {
+  background-color: var(--vp-button-alt-hover-bg);
+}
+
+.jump-to-today-button {
+  margin-left: 10px;
+  padding: 10px 20px;
+  border: none;
+  background-color: var(--vp-button-brand-bg);
+  color: var(--vp-button-brand-text);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.jump-to-today-button:hover {
+  background-color: var(--vp-button-brand-hover-bg);
+}
+
+.date-picker {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  width: 100%;
+  display: block;
+  font-size: 16px;
 }
 </style>
