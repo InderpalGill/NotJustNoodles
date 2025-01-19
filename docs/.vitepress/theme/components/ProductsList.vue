@@ -17,11 +17,19 @@
     </div>
 
     <div v-if="showProductList" class="product-details">
-      <pre v-if="products.length">{{ productsText }}</pre>
+      <div v-if="products.length">
+        <div class="product-pill" v-for="product in products" :key="product.id">
+          {{ product.product_name }}
+        </div>
+      </div>
       <div v-else>No products found for this date.</div>
     </div>
 
     <button class="refresh-button" @click="fetchProducts">Refresh</button>
+    <button class="date-picker-button" @click="toggleDatePicker">Pick Date</button>
+
+      <!-- Date Picker Modal -->
+      <input type="date" v-model="datePicker" v-if="showDatePicker" @change="setDate" class="date-picker" />
   </div>
 </template>
 
@@ -38,6 +46,8 @@ export default {
   setup() {
     const products = ref([]);
     const showProductList = ref(false);
+    const showDatePicker = ref(false);
+    const datePicker = ref("");
     const currentDate = ref(new Date());
 
     // Computed property to format the date as needed
@@ -80,12 +90,19 @@ export default {
       showProductList.value = !showProductList.value;
     };
 
-    // Create a backup format for product text to display easily
-    const productsText = computed(() => {
-      return products.value
-        .map((product) => `${product.product_name} (ID: ${product.id})`)
-        .join("\n");
-    });
+    // Toggle the date picker display
+    const toggleDatePicker = () => {
+      showDatePicker.value = !showDatePicker.value;
+    };
+
+    // Set the current date based on the date picker value
+    const setDate = () => {
+      if (datePicker.value) {
+        currentDate.value = new Date(datePicker.value);
+        fetchProducts(); // Fetch products for the selected date
+      }
+      showDatePicker.value = false; // Hide the date picker after selecting
+    };
 
     // Fetch products when the component is mounted
     onMounted(() => {
@@ -99,7 +116,10 @@ export default {
       fetchProducts,
       changeDate,
       toggleProductList,
-      productsText,
+      showDatePicker,
+      toggleDatePicker,
+      datePicker,
+      setDate,
     };
   },
 };
@@ -140,7 +160,17 @@ export default {
   padding: 10px;
 }
 
-.refresh-button {
+.product-pill {
+  display: inline-block;
+  background-color: var(--vp-button-alt-bg);
+  color: var(--vp-button-alt-text);
+  border-radius: 12px;
+  padding: 5px 10px;
+  margin: 5px;
+  font-size: 14px;
+}
+
+.refresh-button, .date-picker-button {
   margin-top: 10px;
   padding: 10px 20px;
   border: none;
@@ -152,7 +182,21 @@ export default {
   transition: background-color 0.3s ease;
 }
 
-.refresh-button:hover {
+.refresh-button:hover, .date-picker-button:hover {
   background-color: var(--vp-button-alt-hover-bg);
+}
+
+.date-picker-button {
+  margin-left: 10px;
+}
+
+.date-picker {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  width: 100%;
+  display: block;
+  font-size: 16px;
 }
 </style>
