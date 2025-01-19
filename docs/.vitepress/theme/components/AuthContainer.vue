@@ -491,11 +491,6 @@ button:hover {
     padding: 0px;
   }
 
-  .layout {
-    padding: 0px;
-    margin: 0px;
-  }
-
   .logout-debug-container {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
