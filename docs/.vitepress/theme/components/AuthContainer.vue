@@ -2,19 +2,19 @@
   <div class="auth-container">
     <div v-if="!user">
       <div class="auth-forms">
-        <div class="login-form">
-          <h2>Login</h2>
-          <input type="email" v-model="loginEmail" placeholder="Email" />
-          <input type="password" v-model="loginPassword" placeholder="Password" />
-          <button @click="login">Login</button>
-          <p v-if="loginError" class="error">{{ loginError }}</p>
-        </div>
         <div class="register-form">
-          <h2>Register</h2>
+          <div class="form-title">Register</div>
           <input type="email" v-model="registerEmail" placeholder="Email" />
           <input type="password" v-model="registerPassword" placeholder="Password" />
           <button @click="register">Register</button>
           <p v-if="registerError" class="error">{{ registerError }}</p>
+        </div>
+        <div class="login-form">
+          <div class="form-title">Login</div>
+          <input type="email" v-model="loginEmail" placeholder="Email" />
+          <input type="password" v-model="loginPassword" placeholder="Password" />
+          <button @click="login">Login</button>
+          <p v-if="loginError" class="error">{{ loginError }}</p>
         </div>
       </div>
     </div>
@@ -207,23 +207,51 @@ export default {
   justify-content: center;
 }
 
+.form-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
 .login-form,
 .register-form {
   display: flex;
   flex-direction: column;
   gap: 10px;
   width: 300px;
+  border-radius: 16px;
+  border: 1px solid var(--vp-c-divider);
+  background-color: var(--vp-c-bg-soft);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
+  margin: 20px;
+  padding: 20px;
 }
 
 input {
-  padding: 10px;
+  flex: 1;
+  padding: 12px;
+  margin: 5px 0;
+  border: none;
+  background-color: var(--vp-c-bg);
+  border-radius: 8px;
   font-size: 16px;
 }
 
 button {
-  padding: 10px;
-  font-size: 16px;
+  padding: 12px 20px;
+  border: none;
+  background-color: var(--vp-button-brand-bg);
+  color: var(--vp-button-brand-text);
+  font-weight: bold;
   cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-radius: 8px;
+}
+
+button:hover {
+  background-color: var(--vp-button-brand-hover-bg);
+  color: var(--vp-button-brand-hover-text);
 }
 
 .logout-button {
@@ -243,7 +271,7 @@ button {
 }
 
 .error {
-  color: red;
+  color: var(--vp-c-red-1);
   font-size: 14px;
 }
 
@@ -264,7 +292,7 @@ button {
   margin-top: 20px;
   width: 100%;
   max-width: 800px;
-  background-color: #f5f5f5;
+  background-color: var(--vp-c-bg-soft);
   padding: 20px;
   border-radius: 8px;
 }
