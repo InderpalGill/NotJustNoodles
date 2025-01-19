@@ -1,28 +1,87 @@
 <template>
   <div class="open-food-facts">
     <div class="title">Search for a Product by Barcode</div>
-    <div>
+    <div class="search-section">
       <input
         v-model="barcode"
         placeholder="Enter barcode"
         @keyup.enter="searchByBarcode"
       />
+      <button @click="searchByBarcode">Search</button>
     </div>
-    <button @click="searchByBarcode">Search</button>
 
     <div v-if="loading" class="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
 
     <div v-if="product" class="product-info">
-      <div class="product-name">
-        {{ product.product_name || "No product name available" }}
+      <div class="product-header">
+        <img v-if="product.image_url" :src="product.image_url" alt="Product Image" />
+        <div class="product-title-brand">
+          <div class="product-name">
+            {{ product.product_name || "No product name available" }}
+          </div>
+          <div class="product-brand">
+            {{ product.brands }}
+          </div>
+        </div>
       </div>
-      <img v-if="product.image_url" :src="product.image_url" alt="Product Image" />
-      <div><strong>Brands:</strong> {{ product.brands }}</div>
-      <div><strong>Categories:</strong> {{ product.categories }}</div>
-      <div><strong>Allergens:</strong> {{ product.allergens || "None" }}</div>
-      <div><strong>Ingredients:</strong> {{ product.ingredients_text }}</div>
-      <div><strong>Nutrition Grade:</strong> {{ product.nutrition_grade_fr }}</div>
+      <div class="product-details">
+        <div class="detail-card">
+          <div class="card-title" @click="toggleAllergens">
+            Allergens <span v-if="!showAllergens">(click to expand)</span>
+            <span v-else>(click to collapse)</span>
+          </div>
+          <div class="card-content" v-show="showAllergens">
+            <div v-if="allergensList.length">
+              <span class="pill" v-for="(allergen, index) in allergensList" :key="index">
+                {{ allergen }}
+              </span>
+            </div>
+            <div v-else>None</div>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="card-title" @click="toggleIngredients">
+            Ingredients <span v-if="!showIngredients">(click to expand)</span>
+            <span v-else>(click to collapse)</span>
+          </div>
+          <div class="card-content" v-show="showIngredients">
+            <div v-if="ingredientsList.length">
+              <span
+                class="pill"
+                v-for="(ingredient, index) in ingredientsList"
+                :key="index"
+              >
+                {{ ingredient }}
+              </span>
+            </div>
+            <div v-else>No ingredients listed.</div>
+          </div>
+        </div>
+        <div class="detail-card nutrition-facts">
+          <div class="card-title">Nutrition Facts</div>
+          <div class="card-content">
+            <table class="nutrition-table">
+              <thead>
+                <tr>
+                  <th>Nutrient</th>
+                  <th>Per 100g</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(nutrient, index) in nutrimentsList" :key="index">
+                  <td>{{ nutrient.name }}</td>
+                  <td>{{ nutrient.value }} {{ nutrient.unit }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="debug-info">
+        <div class="card-title">Nutrition Facts (Debug)</div>
+        <pre>{{ product.nutriments }}</pre>
+      </div>
     </div>
   </div>
 </template>
@@ -36,7 +95,57 @@ export default {
       product: null,
       loading: false,
       error: null,
+      showAllergens: false,
+      showIngredients: false,
     };
+  },
+  computed: {
+    allergensList() {
+      if (!this.product || !this.product.allergens_tags) {
+        return [];
+      }
+      return this.product.allergens_tags.map((tag) =>
+        tag.replace("en:", "").replace("-", " ").toUpperCase()
+      );
+    },
+    ingredientsList() {
+      if (!this.product || !this.product.ingredients_text) {
+        return [];
+      }
+      return this.product.ingredients_text
+        .split(",")
+        .map((ingredient) => ingredient.trim());
+    },
+    nutrimentsList() {
+      if (!this.product || !this.product.nutriments) {
+        return [];
+      }
+      const nutriments = this.product.nutriments;
+      const nutrientsToDisplay = [
+        "energy-kcal",
+        "fat",
+        "saturated-fat",
+        "carbohydrates",
+        "sugars",
+        "fiber",
+        "proteins",
+        "salt",
+        "sodium",
+      ];
+
+      return nutrientsToDisplay
+        .map((nutrimentKey) => {
+          const value = nutriments[nutrimentKey + "_100g"];
+          if (value !== undefined) {
+            return {
+              name: this.formatNutriment(nutrimentKey),
+              value: value,
+              unit: nutriments[nutrimentKey + "_unit"] || "g",
+            };
+          }
+        })
+        .filter((nutrient) => nutrient !== undefined);
+    },
   },
   methods: {
     async searchByBarcode() {
@@ -77,67 +186,186 @@ export default {
         this.loading = false;
       }
     },
+    formatNutriment(key) {
+      return key.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+    },
+    toggleAllergens() {
+      this.showAllergens = !this.showAllergens;
+    },
+    toggleIngredients() {
+      this.showIngredients = !this.showIngredients;
+    },
   },
 };
 </script>
 
 <style scoped>
-/* Basic styles */
 .open-food-facts {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  padding: 16px;
-  margin: 16px auto;
-  border-radius: 8px;
+  gap: 1.5rem;
+  padding: 24px;
+  margin: 24px auto;
+  border-radius: 16px;
   border: 1px solid var(--vp-c-divider);
   background-color: var(--vp-c-bg-soft);
-  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
-  max-width: 600px;
-  margin: 0 auto;
+  max-width: 700px;
   font-family: Arial, sans-serif;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .title {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
-  margin-bottom: 10px;
+  text-align: center;
+  color: var(--vp-c-text);
+}
+
+.search-section {
+  display: flex;
+  gap: 10px;
 }
 
 input[type="text"] {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
+  flex: 1;
+  padding: 12px;
+  border: 1px solid var(--vp-c-divider);
+  background-color: var(--vp-c-bg);
+  border-radius: 8px;
 }
 
 button {
-  padding: 8px 16px;
-  margin: 10px 0;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--vp-button-brand-border);
+  background-color: var(--vp-button-brand-bg);
+  color: var(--vp-button-brand-text);
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-.loading {
-  margin-top: 10px;
+button:hover {
+  border: 1px solid var(--vp-button-brand-hover-border);
+  background-color: var(--vp-button-brand-hover-bg);
+  color: var(--vp-button-brand-hover-text);
+}
+
+.loading,
+.error {
+  text-align: center;
+  font-size: 16px;
+  color: white;
 }
 
 .error {
-  color: red;
-  margin-top: 10px;
+  color: #ffdddd;
 }
 
 .product-info {
-  margin-top: 20px;
-  border: 1px solid #ccc;
-  padding: 10px;
+  background-color: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.product-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.product-title-brand {
+  flex: 1;
 }
 
 .product-name {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
 }
 
-.product-info img {
-  max-width: 100%;
-  height: auto;
-  margin-top: 10px;
+.product-brand {
+  font-size: 18px;
+  color: gray;
+}
+
+.product-header img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--vp-c-divider);
+}
+
+.product-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detail-card {
+  border: 1px solid #cccccc;
+  border-radius: 12px;
+  padding: 15px;
+  background-color: #fafafa;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.card-content {
+  font-size: 16px;
+}
+
+.pill {
+  display: inline-block;
+  border: 1px solid var(--vp-c-brand-soft);
+  background-color: var(--vp-c-brand-soft);
+  color: var(--vp-c-text-2);
+  padding: 6px 12px;
+  margin: 4px;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+.pill:hover {
+  border: 1px solid var(--vp-c-brand);
+  color: var(--vp-c-text-1);
+}
+
+.nutrition-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.nutrition-table th,
+.nutrition-table td {
+  border: 1px solid var(--vp-c-divider);
+  padding: 8px;
+  text-align: left;
+}
+
+.nutrition-table th {
+  background-color: var(--vp-c-bg-soft);
+}
+
+.debug-info {
+  border-top: 1px solid #cccccc;
+  padding-top: 15px;
+}
+
+.debug-info pre {
+  background-color: #eaeaea;
+  padding: 10px;
+  border-radius: 8px;
+  overflow-x: auto;
 }
 </style>
