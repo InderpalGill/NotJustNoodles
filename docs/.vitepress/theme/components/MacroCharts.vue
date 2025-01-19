@@ -1,7 +1,7 @@
 <template>
   <div class="outer-card">
     <div class="dashboard">
-      <h1>Macro Tracker</h1>
+      <h1>Your MacroMap</h1>
 
       <!-- User Input Form -->
       <div class="input-container">
@@ -94,7 +94,7 @@ export default {
     getBarColor(nutrient) {
       switch (nutrient) {
         case "calories":
-          return "#FF5733"; // Orange for calories
+          return "#6A8CAF"; // Orange for calories
         case "carbohydrates":
           return "#33FF57"; // Green for carbohydrates
         case "fat":

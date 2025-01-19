@@ -1,13 +1,22 @@
 <template>
   <div class="auth-container">
     <div v-if="!user" class="auth-content">
-      <div class="auth-image">
+      <!-- <div>
+       <h1>Welcome to your Nutrition Dashboard</h1> 
+       <h2>Please log in or create an account.</h2>
+      </div> -->
+      <div class="image-container">
+    <img src="./Images/image.jpg" alt="Fruits and smoothie" class="background-image">
+    <div class="overlay-text">
+      <h1>Welcome to NotJustNoodles</h1></div>
+  </div>
+      <!-- <div class="auth-image">
         <img :src="currentImage" alt="Auth Image" />
-      </div>
+      </div> -->
       <div class="auth-form-container">
         <div class="auth-forms">
           <div v-if="isLogin" class="login-form">
-            <div class="form-title">Login</div>
+            <div class="form-title">Login to your account to continue</div>
             <input
               type="email"
               v-model="loginEmail"
@@ -284,12 +293,40 @@ export default {
 </script>
 
 <style scoped>
+.image-container {
+  position: relative;
+  text-align: center;
+  width: 65%;
+  max-width: 800px; /* Adjust to fit your layout */
+  margin: 0 auto;
+  
+}
+
+.background-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  }
+
+.overlay-text {
+  position: absolute;
+  top: 88%;
+  left: 62%;
+  transform: translate(-18%, -85%);
+  color: #333;
+  font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  letter-spacing: 1px;
+}
+
 .auth-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  /* padding: 40px; */
-  /* min-height: 100vh; */
+  align-items: center; 
   width: 100%;
 }
 
@@ -325,15 +362,17 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%; /* Increased width */
+  max-width: 600px;
 }
 
 .auth-forms {
   width: 100%;
-  max-width: 400px;
+  max-width: 500px;
 }
 
 .form-title {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: bold;
   margin-bottom: 10px;
   text-align: center;

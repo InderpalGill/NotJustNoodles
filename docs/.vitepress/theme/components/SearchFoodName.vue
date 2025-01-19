@@ -1,13 +1,59 @@
 <template>
-  <div class="search-for-food">
-    <div class="title">Search for Food by Name</div>
-    <div>
-      <input
-        v-model="foodQuery"
-        placeholder="Enter Food Name/Description"
-        @input="searchByFoodName"
-        class="food-input"
-      />
+
+    <div class="search-for-food">
+        <div class="title">Search for Food by Name</div>
+        <div>
+            <input
+                v-model="foodQuery"
+                placeholder="Enter Food Name/Description"
+                @input="searchByFoodName"
+                style="font-size: 24px"
+            />
+        </div>
+        <ul v-if="foodSuggestions && foodSuggestions.length" class="foodSuggestions">
+            <li
+                v-for="(food, index) in foodSuggestions"
+                :key="index"
+                @click="selectFood(food)"
+            >
+                {{ food.food_description }}
+            </li>
+        </ul>
+
+        <div v-if="selectedFood" class="selectedFood">
+            <div><strong>Selected Food:</strong> {{ selectedFood.food_description }}</div>
+            <div><strong>Food Code:</strong> {{ selectedFood.food_code }}</div>
+        </div>
+
+        <!--Nutrient Information-->
+        <div v-if="nutrientInfo.length" class="nutrient-info">
+            <h3>Nutritional Information (per entered weight)</h3>
+            <div>
+                <label for="food-weight">Enter Food Weight (in grams): </label>
+                <input
+                    id="food-weight"
+                    v-model.number="foodWeight"
+                    type="number"
+                    placeholder="Enter weight in grams"
+                />
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nutrient</th>
+                        <th>Value (for {{ foodWeight || 100 }} g)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(nutrient, index) in filteredNutrientInfo" :key="index">
+                        <td>{{ nutrient.nutrient_web_name }}</td>
+                        <td>{{ (nutrient.nutrient_value * foodWeight / 100).toFixed(2) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
     </div>
     <ul v-if="foodSuggestions.length" class="food-suggestions">
       <li
@@ -210,9 +256,14 @@ export default {
 }
 
 .title {
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans",
+    Arial, sans-serif;
   font-size: 24px;
+  align-items: center;
+
   font-weight: bold;
-  margin-bottom: 10px;
+  text-align: center;
+  color: var(--vp-c-text);
 }
 
 .food-input {
