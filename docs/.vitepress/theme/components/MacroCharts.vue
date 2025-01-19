@@ -1,64 +1,66 @@
 <template>
-  <div class="dashboard">
-    <h1>Macro Tracker</h1>
+  <div class="outer-card">
+    <div class="dashboard">
+      <h1>Macro Tracker</h1>
 
-    <!-- User Input Form -->
-    <div class="input-container">
-      <div class="input-box">
-        <label for="calories">Target Calories:</label>
-        <input
-          id="calories"
-          type="number"
-          v-model="targets.calories"
-          placeholder="Enter target calories"
-        />
+      <!-- User Input Form -->
+      <div class="input-container">
+        <div class="input-box">
+          <label for="calories">Target Calories:</label>
+          <input
+            id="calories"
+            type="number"
+            v-model="targets.calories"
+            placeholder="Enter target calories"
+          />
+        </div>
+
+        <div class="input-box">
+          <label for="carbohydrates">Target Carbs (g):</label>
+          <input
+            id="carbohydrates"
+            type="number"
+            v-model="targets.carbohydrates"
+            placeholder="Enter target carbs"
+          />
+        </div>
+
+        <div class="input-box">
+          <label for="fat">Target Fat (g):</label>
+          <input
+            id="fat"
+            type="number"
+            v-model="targets.fat"
+            placeholder="Enter target fat"
+          />
+        </div>
+
+        <div class="input-box">
+          <label for="protein">Target Protein (g):</label>
+          <input
+            id="protein"
+            type="number"
+            v-model="targets.protein"
+            placeholder="Enter target protein"
+          />
+        </div>
       </div>
 
-      <div class="input-box">
-        <label for="carbohydrates">Target Carbs (g):</label>
-        <input
-          id="carbohydrates"
-          type="number"
-          v-model="targets.carbohydrates"
-          placeholder="Enter target carbs"
-        />
-      </div>
-
-      <div class="input-box">
-        <label for="fat">Target Fat (g):</label>
-        <input
-          id="fat"
-          type="number"
-          v-model="targets.fat"
-          placeholder="Enter target fat"
-        />
-      </div>
-
-      <div class="input-box">
-        <label for="protein">Target Protein (g):</label>
-        <input
-          id="protein"
-          type="number"
-          v-model="targets.protein"
-          placeholder="Enter target protein"
-        />
-      </div>
-    </div>
-
-    <!-- Macro Tracker Section -->
-    <div class="macro-tracker">
-      <div class="bars-container">
-        <div
-          class="bar"
-          v-for="(value, key) in targets"
-          :key="key"
-          :style="{
-            height: `${(consumed[key] / value) * 100}%`,
-            backgroundColor: getBarColor(key),
-          }"
-        >
-          <div class="label">
-            {{ capitalize(key) }}: {{ consumed[key] }} g / {{ value }} g
+      <!-- Macro Tracker Section -->
+      <div class="macro-tracker">
+        <div class="bars-container">
+          <div
+            class="bar"
+            v-for="(value, key) in targets"
+            :key="key"
+            :style="{
+              height: `${(consumed[key] / value) * 100}%`,
+              backgroundColor: getBarColor(key),
+            }"
+          >
+            <div class="label">
+              {{ capitalize(key) }}: {{ consumed[key] }} g / {{ value }} g
+            </div>
           </div>
         </div>
       </div>
@@ -112,6 +114,14 @@ export default {
 </script>
 
 <style scoped>
+.outer-card {
+  padding: 24px;
+  /* margin: 24px auto; */
+  border-radius: 16px;
+  border: 1px solid var(--vp-c-divider);
+  background-color: var(--vp-c-bg-soft);
+}
+
 .dashboard {
   text-align: center;
   font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans",

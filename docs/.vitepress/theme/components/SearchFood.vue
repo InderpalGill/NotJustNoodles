@@ -68,7 +68,7 @@
             </table>
           </div>
         </div>
-        <div class="detail-card debug-info">
+        <!-- <div class="detail-card debug-info">
           <div class="card-title" @click="toggleDebug">
             Debug Information
             <span v-if="!showDebug" class="help-text">(click to expand)</span>
@@ -77,7 +77,7 @@
           <div class="card-content" v-show="showDebug">
             <pre>{{ debugInfo }}</pre>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
 
@@ -374,7 +374,7 @@ button {
   border: 1px solid var(--vp-c-divider);
   border-radius: 12px;
   padding: 15px;
-  background-color: var(--vp-c-bg-soft);
+  /* background-color: var(--vp-c-bg-soft); */
 }
 
 .card-title {

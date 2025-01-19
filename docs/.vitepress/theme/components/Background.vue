@@ -48,29 +48,31 @@ import SearchFood from "./SearchFood.vue";
   display: flex; /* Set up a horizontal flex container */
   justify-content: space-between; /* Space between left and right */
   align-items: flex-start; /* Align items at the top */
-  width: 100%; /* Take the full width of the parent container */
+  width: 95%; /* Take the full width of the parent container */
   gap: 20px;
+  background-color: var(--vp-c-bg-alt);
+  border-radius: 16px;
 }
 
 .search-food {
-  width: 55%;
+  width: 50%;
   max-width: 600px;
   padding: 20px;
   margin: 20px;
-  background-color: var(--vp-c-bg-alt);
-  border-radius: 16px;
 }
 
 .search-food > *:not(:last-child) {
-  margin-bottom: 20px; /* Add spacing between child elements */
+  margin-bottom: 20px;
 }
 
 #macro-charts {
-  width: 50%;
+  width: 45%;
   max-width: 500px;
   padding: 20px;
   margin: 20px;
-  background-color: var(--vp-c-bg-alt);
-  border-radius: 16px;
+}
+
+#macro-charts > *:not(:last-child) {
+  margin-bottom: 20px;
 }
 </style>
