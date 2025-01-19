@@ -24,7 +24,8 @@
           <div class="product-brand">
             {{ product.brands }}
           </div>
-          <button class="add-to-list-button">Add to List</button>
+          <!-- Bind the addToList method to the button -->
+          <button class="add-to-list-button" @click="addToList">Add to List</button>
         </div>
       </div>
       <div class="product-details">
@@ -72,6 +73,9 @@
 </template>
 
 <script>
+import { db } from "../firebase";
+import { collection, addDoc } from "firebase/firestore";
+
 export default {
   name: "OpenFoodFactsBarcode",
   data() {
@@ -85,7 +89,6 @@ export default {
     };
   },
   computed: {
-    // Main nutriments list based on common nutrients
     nutrimentsList() {
       if (!this.product || !this.product.nutriments) {
         return [];
@@ -116,7 +119,6 @@ export default {
         })
         .filter((nutrient) => nutrient !== undefined);
     },
-    // Detailed nutriments list including all available nutrients
     nutrimentsDetailedList() {
       if (!this.product || !this.product.nutriments) {
         return [];
@@ -138,7 +140,6 @@ export default {
         };
       });
     },
-    // Additional nutrients not listed in the main nutriments list
     additionalNutrientsList() {
       const mainNutrients = this.nutrimentsList.map((n) => n.name.toLowerCase());
       const detailedNutrients = this.nutrimentsDetailedList;
@@ -199,11 +200,35 @@ export default {
       this.showNutritionFacts = !this.showNutritionFacts;
     },
     getServingValue(nutriments, key) {
-      // Check if serving size is available
       if (this.product && this.product.serving_size && nutriments[`${key}_serving`]) {
         return nutriments[`${key}_serving`];
       }
       return null;
+    },
+    async addToList() {
+      if (!this.product) {
+        this.error = "No product to add.";
+        return;
+      }
+
+      try {
+        const productsCollection = collection(db, "products");
+        const productData = {
+          barcode: this.barcode,
+          product_name: this.product.product_name || "No product name available",
+          brands: this.product.brands || "Unknown",
+          image_url: this.product.image_url || "",
+          nutriments: this.product.nutriments || {},
+          added_at: new Date(),
+        };
+        const docRef = await addDoc(productsCollection, productData);
+        alert(`Product added to list with ID: ${docRef.id}`);
+        this.barcode = "";
+        this.product = null;
+      } catch (error) {
+        console.error("Error adding document: ", error);
+        this.error = "Failed to add product to the list.";
+      }
     },
   },
 };

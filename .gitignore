@@ -4,3 +4,6 @@ docs/.vitepress/cache
 
 # node modules
 node_modules/
+
+# env
+docs/.env
