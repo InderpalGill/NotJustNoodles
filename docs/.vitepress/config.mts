@@ -5,7 +5,7 @@ export default defineConfig({
   title: "NWHacks 2025",
   description: "Placeholder description",
   cleanUrls: true,
-  base: "/streak-saver/",
+  base: "/not-just-noodles/",
   vite: { 
     ssr: { noExternal: ['@cynber/vitepress-valence']} 
   },

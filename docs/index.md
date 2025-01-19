@@ -3,9 +3,11 @@
 layout: home
 
 hero:
+
   name: "Not Just Noodles"
   text: "Because even students deserve a good meal"
   tagline: NWHacks 2025 Project
+
   actions:
     - theme: brand
       text: Jump to the project

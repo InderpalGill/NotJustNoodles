@@ -1,22 +1,27 @@
+```vue
 <template>
   <div class="open-food-facts">
-    <div class="title">Search for a Product by Barcode</div>
+    <div v-if="!addingToList" class="title">Search for Food by Barcode</div>
 
-    <div class="search-section">
+    <div v-if="!addingToList" class="search-section">
       <input
         type="text"
         v-model="barcode"
         placeholder="Enter barcode"
         @keyup.enter="searchByBarcode"
-        style="font-size: 24px;"/>
-        
-      <button @click="searchByBarcode">Search</button>
+        style="font-size: 24px"
+      />
+      <button class="brand-button" @click="searchByBarcode">
+        <span class="button-icon-text">
+          <Icon icon="material-symbols:search-rounded" width="24" height="24" />Search
+        </span>
+      </button>
     </div>
 
     <div v-if="loading" class="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
 
-    <div v-if="product" class="product-info">
+    <div v-if="product && !addingToList" class="product-info">
       <div class="product-header">
         <img v-if="product.image_url" :src="product.image_url" alt="Product Image" />
         <div class="product-title-brand">
@@ -26,15 +31,20 @@
           <div class="product-brand">
             {{ product.brands }}
           </div>
-          <button class="add-to-list-button" @click="emitAddProduct">Add to List</button>
+          <button class="add-to-list-button" @click="beginAddToList">
+            <span class="button-icon-text">
+              <Icon icon="carbon:add-filled" width="24" height="24" />
+              Add to List
+            </span>
+          </button>
         </div>
       </div>
       <div class="product-details">
         <div class="detail-card nutrition-facts">
           <div class="card-title" @click="toggleNutritionFacts">
             Nutrition Facts
-            <span v-if="!showNutritionFacts">(click to expand)</span>
-            <span v-else>(click to collapse)</span>
+            <span class="help-text" v-if="!showNutritionFacts">(click to expand)</span>
+            <span v-else class="help-text">(click to collapse)</span>
           </div>
           <div class="card-content" v-show="showNutritionFacts">
             <table class="nutrition-table">
@@ -58,17 +68,29 @@
             </table>
           </div>
         </div>
+        <!-- <div class="detail-card debug-info">
+          <div class="card-title" @click="toggleDebug">
+            Debug Information
+            <span v-if="!showDebug" class="help-text">(click to expand)</span>
+            <span v-else class="help-text">(click to collapse)</span>
+          </div>
+          <div class="card-content" v-show="showDebug">
+            <pre>{{ debugInfo }}</pre>
+          </div>
+        </div> -->
       </div>
-      <div class="detail-card debug-info">
-        <div class="card-title" @click="toggleDebug">
-          Debug Information
-          <span v-if="!showDebug">(click to expand)</span>
-          <span v-else>(click to collapse)</span>
-        </div>
-        <div class="card-content" v-show="showDebug">
-          <pre>{{ debugInfo }}</pre>
-        </div>
-      </div>
+    </div>
+
+    <div v-if="addingToList" class="add-to-list-section">
+      <div class="title">Enter Date</div>
+      <input
+        type="text"
+        v-model="date"
+        placeholder="yyyy-mm-dd"
+        style="font-size: 24px"
+      />
+      <button class="brand-button" @click="submitDate">Submit</button>
+      <button class="alt-button" @click="cancelAddToList">Cancel</button>
     </div>
   </div>
 </template>
@@ -76,6 +98,7 @@
 <script>
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
+import { Icon } from "@iconify/vue";
 
 export default {
   name: "SearchFood",
@@ -87,39 +110,11 @@ export default {
       error: null,
       showDebug: false,
       showNutritionFacts: false,
+      addingToList: false,
+      date: "",
     };
   },
   computed: {
-    nutrimentsList() {
-      if (!this.product || !this.product.nutriments) {
-        return [];
-      }
-      const nutriments = this.product.nutriments;
-      const nutrientsToDisplay = [
-        "energy-kcal",
-        "fat",
-        "saturated-fat",
-        "carbohydrates",
-        "sugars",
-        "fiber",
-        "proteins",
-        "salt",
-        "sodium",
-      ];
-
-      return nutrientsToDisplay
-        .map((nutrimentKey) => {
-          const value = nutriments[nutrimentKey + "_100g"];
-          if (value !== undefined) {
-            return {
-              name: this.formatNutriment(nutrimentKey),
-              value: value,
-              unit: nutriments[nutrimentKey + "_unit"] || "g",
-            };
-          }
-        })
-        .filter((nutrient) => nutrient !== undefined);
-    },
     nutrimentsDetailedList() {
       if (!this.product || !this.product.nutriments) {
         return [];
@@ -141,13 +136,6 @@ export default {
         };
       });
     },
-    additionalNutrientsList() {
-      const mainNutrients = this.nutrimentsList.map((n) => n.name.toLowerCase());
-      const detailedNutrients = this.nutrimentsDetailedList;
-      return detailedNutrients.filter(
-        (n) => !mainNutrients.includes(n.name.toLowerCase())
-      );
-    },
     debugInfo() {
       return JSON.stringify(this.product, null, 2);
     },
@@ -164,7 +152,6 @@ export default {
       this.product = null;
 
       try {
-        console.log("Searching for barcode:", this.barcode);
         const response = await fetch(
           `https://world.openfoodfacts.org/api/v0/product/${this.barcode}.json`,
           {
@@ -182,14 +169,11 @@ export default {
 
         if (data.status === 1 && data.product) {
           this.product = data.product;
-          console.log("Product found:", this.product);
         } else {
           this.error = "No product found with this barcode.";
-          console.warn("No product found for barcode:", this.barcode);
         }
       } catch (err) {
         this.error = "An error occurred while fetching data.";
-        console.error("Fetch error:", err);
       } finally {
         this.loading = false;
       }
@@ -209,13 +193,26 @@ export default {
       }
       return null;
     },
-    emitAddProduct() {
-      if (!this.product) {
-        this.error = "No product to add.";
-        console.error("Emit add-product without product data.");
+    beginAddToList() {
+      this.addingToList = true;
+    },
+    cancelAddToList() {
+      this.addingToList = false;
+      this.date = "";
+    },
+    submitDate() {
+      // Check if the date is in the correct format (optional)
+      if (!this.date) {
+        this.error = "Please enter a valid date.";
         return;
       }
-      this.$emit("add-product", this.product);
+
+      // Emit the product along with the date
+      this.$emit("add-product", { product: this.product, date: this.date });
+
+      // Resetting the input fields after submission
+      this.date = "";
+      this.cancelAddToList(); // reset addingToList state
     },
   },
 };
@@ -227,7 +224,7 @@ export default {
   flex-direction: column;
   gap: 1.5rem;
   padding: 24px;
-  margin: 24px auto;
+  /* margin: 24px auto; */
   border-radius: 16px;
   border: 1px solid var(--vp-c-divider);
   background-color: var(--vp-c-bg-soft);
@@ -238,7 +235,8 @@ export default {
 }
 
 .title {
-  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans",
+    Arial, sans-serif;
   font-size: 24px;
   align-items: center;
 
@@ -249,37 +247,59 @@ export default {
 
 .search-section {
   display: flex;
-  padding: 0;
-  gap: 0;
-  background-color: var(--vp-c-bg-alt);
-  border-radius: 8px;
-  border: 1px solid var(--vp-c-divider);
-  overflow: hidden;
+  flex-direction: column; /* Stack input and button vertically */
+  /* background-color: var(--vp-c-bg-alt); */
+  /* border-radius: 8px; */
+  /* border: 1px solid var(--vp-c-divider); */
 }
 
 input[type="text"] {
-  flex: 1;
+  width: calc(100%); /* Ensures it takes available width */
   padding: 12px;
+  margin-bottom: 10px;
   border: none;
-  background-color: var(--vp-c-bg);
-  border-radius: 8px 0 0 8px;
-  font-size: 16px;
+  background-color: var(--vp-c-bg-alt);
+  border-radius: 8px;
 }
 
 button {
   padding: 12px 20px;
   border: none;
-  background-color: var(--vp-button-brand-bg);
-  color: var(--vp-button-brand-text);
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  border-radius: 0 8px 8px 0;
+  border-radius: 8px;
 }
 
-button:hover {
+button.brand-button {
+  width: 100%; /* Make button full width */
+}
+
+.brand-button {
+  background-color: var(--vp-button-brand-bg);
+  color: var(--vp-button-brand-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.alt-button {
+  background-color: var(--vp-button-alt-bg);
+  color: var(--vp-button-alt-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.brand-button:hover {
   background-color: var(--vp-button-brand-hover-bg);
   color: var(--vp-button-brand-hover-text);
+}
+
+.alt-button:hover {
+  background-color: var(--vp-button-alt-hover-bg);
+  color: var(--vp-button-alt-hover-text);
+}
+
+.button-icon-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .add-to-list-button {
@@ -304,11 +324,6 @@ button:hover {
 
 .error {
   color: var(--vp-c-warning-1);
-}
-
-.success {
-  color: green;
-  font-size: 14px;
 }
 
 .product-info {
@@ -344,8 +359,8 @@ button:hover {
 }
 
 .product-header img {
-  width: 200px;
-  height: 200px;
+  width: 150px;
+  height: 150px;
   object-fit: cover;
   border-radius: 12px;
   border: 1px solid var(--vp-c-divider);
@@ -361,7 +376,7 @@ button:hover {
   border: 1px solid var(--vp-c-divider);
   border-radius: 12px;
   padding: 15px;
-  background-color: var(--vp-c-bg-soft);
+  /* background-color: var(--vp-c-bg-soft); */
 }
 
 .card-title {
@@ -374,22 +389,6 @@ button:hover {
 
 .card-content {
   font-size: 16px;
-}
-
-.pill {
-  display: inline-block;
-  border: 1px solid var(--vp-c-brand-soft);
-  background-color: var(--vp-c-brand-soft);
-  color: var(--vp-c-text-2);
-  padding: 6px 12px;
-  margin: 4px;
-  border-radius: 16px;
-  font-size: 14px;
-}
-
-.pill:hover {
-  border: 1px solid var(--vp-c-brand);
-  color: var(--vp-c-text-1);
 }
 
 .nutrition-table {
@@ -408,63 +407,18 @@ button:hover {
   background-color: var(--vp-c-bg-soft);
 }
 
-.debug-info .card-title {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 10px;
-  cursor: pointer;
-  user-select: none;
+.help-text {
+  font-size: 14px;
+  color: var(--vp-c-text-2);
 }
 
-.debug-info .card-content {
-  font-size: 16px;
+.add-to-list-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.debug-info pre {
-  background-color: var(--vp-c-bg-soft);
-  padding: 10px;
-  border-radius: 8px;
-  overflow-x: auto;
-  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
-}
-
-.additional-nutrient-details {
-  margin-top: 10px;
-}
-
-
-.logout-button {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  padding: 10px 20px;
-  cursor: pointer;
-}
-
-.debug-button {
-  position: absolute;
-  top: 60px;
-  right: 20px;
-  padding: 10px 20px;
-  cursor: pointer;
-}
-
-.user-products {
-  margin-top: 20px;
-  width: 100%;
-  max-width: 800px;
-  background-color: #f5f5f5;
-  padding: 20px;
-  border-radius: 8px;
-}
-
-.user-products h3 {
+.add-to-list-section input[type="text"] {
   text-align: center;
-  margin-bottom: 10px;
-}
-
-.user-products pre {
-  white-space: pre-wrap;
-  word-wrap: break-word;
 }
 </style>
