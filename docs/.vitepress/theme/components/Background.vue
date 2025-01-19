@@ -21,7 +21,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center; /* Center content vertically */
-  padding: 40px; /* Adds padding for spacing */
+  padding: 20px; /* Reduced padding to work better with AuthContainer */
 }
 
 #title {
@@ -41,7 +41,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  /* width: 100%; */
+  width: 100%;
   max-width: 1200px;
   gap: 20px; /* Space between components horizontally */
   border-radius: 16px;
@@ -71,7 +71,7 @@
   #macro-charts {
     width: 100%;
     margin: 0; /* Remove margin for cleaner stacking */
-    padding: 0 10px; /* Add padding on sides */
+  padding: 10px; /* Consistent padding */
   }
 }
 </style>

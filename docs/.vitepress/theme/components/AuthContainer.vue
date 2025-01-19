@@ -58,9 +58,9 @@
         <button class="logout-button" @click="logout">Logout</button>
         <p v-if="addError" class="error">{{ addError }}</p>
         <p v-if="addSuccess" class="success">{{ addSuccess }}</p>
-        <button class="debug-button" @click="fetchUserProducts">
+        <!-- <button class="debug-button" @click="fetchUserProducts">
           Debug: List User Products
-        </button>
+        </button> -->
       </div>
       <!-- Use Background and handle events from it -->
       <Background @add-product="handleAddProduct" />
@@ -241,8 +241,9 @@ export default {
         return;
       }
       try {
+        const today = new Date().toISOString().split("T")[0];
         console.log("Fetching products for user:", user.value.uid);
-        const productsCollection = collection(db, "users", user.value.uid, "products");
+        const productsCollection = collection(db, "users", user.value.uid, "dates", today, "products");
         const productsSnapshot = await getDocs(productsCollection);
         const productsList = productsSnapshot.docs.map((doc) => ({
           id: doc.id,
@@ -287,8 +288,8 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px;
-  min-height: 100vh;
+  /* padding: 40px; */
+  /* min-height: 100vh; */
   width: 100%;
 }
 
@@ -394,20 +395,14 @@ button:hover {
   text-decoration: underline;
 }
 
-.logout-button {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+.logout-button,
+.debug-button {
   padding: 10px 20px;
   cursor: pointer;
 }
 
 .debug-button {
-  position: absolute;
-  top: 60px;
-  right: 20px;
-  padding: 10px 20px;
-  cursor: pointer;
+  background-color: var(--vp-button-alt-bg);
 }
 
 .error {
@@ -424,29 +419,37 @@ button:hover {
 
 .authenticated-content {
   width: 100%;
+  /* max-width: 1200px; */
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: 0 auto;
+  /* padding: 10px; */
 }
 
 .logout-debug-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
+  gap: 20px;
   width: 100%;
-  margin-bottom: 20px; /* Add space above Background */
-  padding: 10px; /* Optional: padding for spacing */
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 15px 20px;
+  /* background-color: var(--vp-c-bg-soft); */
+  border-radius: 8px;
 }
 
-.logout-button,
-.debug-button {
-  margin-right: 10px; /* Space between buttons */
+.logout-debug-container .error,
+.logout-debug-container .success {
+  text-align: center;
+  margin: 0;
+  grid-column: 2;
+  min-width: 200px;
 }
 
 .background {
   width: 100%;
-  max-width: 800px; /* Optional: limit max width */
 }
 
 .user-products {
@@ -472,6 +475,7 @@ button:hover {
 @media (max-width: 768px) {
   .auth-content {
     flex-direction: column;
+    padding: 20px;
   }
 
   .auth-image,
@@ -481,6 +485,32 @@ button:hover {
 
   .auth-image {
     margin-bottom: 20px;
+  }
+
+  .background {
+    padding: 0px;
+  }
+
+  .layout {
+    padding: 0px;
+    margin: 0px;
+  }
+
+  .logout-debug-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 10px;
+    padding: 15px;
+  }
+
+  .logout-debug-container .error,
+  .logout-debug-container .success {
+    grid-column: 1;
+    margin: 5px 0;
+  }
+
+  .logout-debug-container button {
+    width: 100%;
   }
 }
 </style>
