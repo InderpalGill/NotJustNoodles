@@ -7,6 +7,7 @@
         <!-- Pass the userId prop down -->
         <SearchFood @add-product="$emit('add-product', $event)" />
         <SearchFoodName :userId="userId" @add-product="$emit('add-product', $event)" />
+        <DailyNutrients />
       </div>
       <div id="macro-charts">
         <ProductsList />

@@ -16,10 +16,12 @@ import { JSONTable,
 import { Icon } from "@iconify/vue"
 import SearchFood from './components/SearchFood.vue'
 import SearchFoodName from './components/SearchFoodName.vue'
+import DailyNutrients from './components/DailyNutrients.vue'
 import Background from './components/Background.vue'
 import MacroCharts from './components/MacroCharts.vue'
 import AuthContainer from './components/AuthContainer.vue'
 import ProductsList from './components/ProductsList.vue'
+
 
 
 
@@ -42,6 +44,7 @@ export default {
     app.component('Icon', Icon)
     app.component('SearchFood', SearchFood)
     app.component('SearchFoodName', SearchFoodName)
+    app.component('DailyNutrients', DailyNutrients)
     app.component('Background', Background)
     app.component('MacroCharts', MacroCharts)
     app.component('AuthContainer', AuthContainer)
