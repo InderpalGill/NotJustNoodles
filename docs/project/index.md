@@ -2,6 +2,7 @@
 layout: home
 ---
 
-My stuff:
+
+<Background />
 
 <AuthContainer />

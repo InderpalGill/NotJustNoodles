@@ -1,13 +1,15 @@
 <template>
   <div class="open-food-facts">
     <div class="title">Search for a Product by Barcode</div>
+
     <div class="search-section">
       <input
         type="text"
         v-model="barcode"
         placeholder="Enter barcode"
         @keyup.enter="searchByBarcode"
-      />
+        style="font-size: 24px;"/>
+        
       <button @click="searchByBarcode">Search</button>
     </div>
 
@@ -230,13 +232,18 @@ export default {
   border-radius: 16px;
   border: 1px solid var(--vp-c-divider);
   background-color: var(--vp-c-bg-soft);
-  max-width: 700px;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
+  max-width: 600px;
+  margin: 10 auto;
   font-family: Arial, sans-serif;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .title {
-  font-size: 28px;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 24px;
+  align-items: center;
+
   font-weight: bold;
   text-align: center;
   color: var(--vp-c-text);
@@ -426,6 +433,7 @@ button:hover {
 .additional-nutrient-details {
   margin-top: 10px;
 }
+
 
 .logout-button {
   position: absolute;
