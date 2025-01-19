@@ -25,7 +25,7 @@
             {{ product.brands }}
           </div>
           <!-- Bind the addToList method to the button -->
-          <button class="add-to-list-button" @click="addToList">Add to List</button>
+          <button class="add-to-list-button" @click="emitAddProduct">Add to List</button>
         </div>
       </div>
       <div class="product-details">
@@ -211,24 +211,7 @@ export default {
         return;
       }
 
-      try {
-        const productsCollection = collection(db, "products");
-        const productData = {
-          barcode: this.barcode,
-          product_name: this.product.product_name || "No product name available",
-          brands: this.product.brands || "Unknown",
-          image_url: this.product.image_url || "",
-          nutriments: this.product.nutriments || {},
-          added_at: new Date(),
-        };
-        const docRef = await addDoc(productsCollection, productData);
-        alert(`Product added to list with ID: ${docRef.id}`);
-        this.barcode = "";
-        this.product = null;
-      } catch (error) {
-        console.error("Error adding document: ", error);
-        this.error = "Failed to add product to the list.";
-      }
+      this.$emit("add-product", this.product); // Emit event to parent
     },
   },
 };
