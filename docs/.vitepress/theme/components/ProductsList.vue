@@ -10,6 +10,12 @@
       </button>
     </div>
 
+    <div class="button-bar">
+      <button class="refresh-button" @click="fetchProducts">Refresh</button>
+      <button class="jump-to-today-button" @click="jumpToToday">Jump to Today</button>
+      <button class="date-picker-button" @click="toggleDatePicker">Pick Date</button>
+    </div>
+
     <div class="product-summary" @click="toggleProductList">
       <span>
         {{ products.length }} products found for this date. Click to view details.
@@ -21,14 +27,12 @@
         <div class="product-pill" v-for="product in products" :key="product.id">
           {{ product.product_name || product.food_description }}
         </div>
+        <div class="summary-nutrients">
+          <div>Total Carbs: {{ totalNutrients.totalCarbs.toFixed(2) }}g</div>
+          <div>Total Protein: {{ totalNutrients.totalProtein.toFixed(2) }}g</div>
+        </div>
       </div>
       <div v-else>No products found for this date.</div>
-    </div>
-
-    <div class="button-bar">
-      <button class="refresh-button" @click="fetchProducts">Refresh</button>
-      <button class="jump-to-today-button" @click="jumpToToday">Jump to Today</button>
-      <button class="date-picker-button" @click="toggleDatePicker">Pick Date</button>
     </div>
 
     <!-- Date Picker Modal -->
@@ -46,7 +50,7 @@
 import { ref, computed, onMounted } from "vue";
 import { db } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
-import { auth } from "../firebase"; // Import auth for user ID reference
+import { auth } from "../firebase";
 import { Icon } from "@iconify/vue";
 
 export default {
@@ -59,7 +63,6 @@ export default {
     const datePicker = ref("");
     const currentDate = ref(new Date());
 
-    // Computed property to format the date as needed
     const formattedDate = computed(() => {
       return currentDate.value.toLocaleDateString("en-US", {
         year: "numeric",
@@ -68,11 +71,41 @@ export default {
       });
     });
 
-    // Fetch products from Firebase based on the current date
+    const totalNutrients = computed(() => {
+      let totalCarbs = 0;
+      let totalProtein = 0;
+
+      products.value.forEach((product) => {
+        if (product.nutriments) {
+          const carbsPer100g = product.nutriments.carbohydrates_100g || 0;
+          const proteinPer100g = product.nutriments.proteins_100g || 0;
+          const weight = product.food_weight || 100;
+
+          totalCarbs += (carbsPer100g / 100) * weight;
+          totalProtein += (proteinPer100g / 100) * weight;
+        }
+
+        if (product.nutrient_info) {
+          product.nutrient_info.forEach((nutrient) => {
+            if (nutrient.nutrient_web_name === "Carbohydrate") {
+              totalCarbs += nutrient.nutrient_value;
+            } else if (nutrient.nutrient_web_name === "Protein") {
+              totalProtein += nutrient.nutrient_value;
+            }
+          });
+        }
+      });
+
+      return {
+        totalCarbs,
+        totalProtein,
+      };
+    });
+
     const fetchProducts = async () => {
       if (!auth.currentUser) return;
       const userId = auth.currentUser.uid;
-      const dateString = currentDate.value.toISOString().split("T")[0]; // YYYY-MM-DD format
+      const dateString = currentDate.value.toISOString().split("T")[0];
 
       const productsCollection = collection(
         db,
@@ -87,40 +120,34 @@ export default {
       console.log(products.value);
     };
 
-    // Change the date by a given number of days
     const changeDate = (days) => {
       const newDate = new Date(currentDate.value);
       newDate.setDate(newDate.getDate() + days);
-      currentDate.value = newDate; // Update the currentDate ref directly
-      fetchProducts(); // Fetch products for the new date
+      currentDate.value = newDate;
+      fetchProducts();
     };
 
-    // Toggle product list visibility
     const toggleProductList = () => {
       showProductList.value = !showProductList.value;
     };
 
-    // Toggle the date picker display
     const toggleDatePicker = () => {
       showDatePicker.value = !showDatePicker.value;
     };
 
-    // Set the current date based on the date picker value
     const setDate = () => {
       if (datePicker.value) {
         currentDate.value = new Date(datePicker.value);
-        fetchProducts(); // Fetch products for the selected date
+        fetchProducts();
       }
-      showDatePicker.value = false; // Hide the date picker after selecting
+      showDatePicker.value = false;
     };
 
-    // Jump to today's date
     const jumpToToday = () => {
       currentDate.value = new Date();
-      fetchProducts(); // Fetch products for today's date
+      fetchProducts();
     };
 
-    // Fetch products when the component is mounted
     onMounted(() => {
       fetchProducts();
     });
@@ -129,6 +156,7 @@ export default {
       products,
       showProductList,
       formattedDate,
+      totalNutrients, // Ensure totalNutrients is included here
       fetchProducts,
       changeDate,
       toggleProductList,
@@ -187,10 +215,15 @@ export default {
   font-size: 14px;
 }
 
+.summary-nutrients {
+  margin-top: 10px;
+}
+
 .button-bar {
   display: flex;
   justify-content: center;
   align-items: baseline;
+  margin-bottom: 10px;
 }
 
 .refresh-button,
@@ -224,10 +257,6 @@ export default {
 
 .jump-to-today-button:hover {
   background-color: var(--vp-button-brand-hover-bg);
-}
-
-.date-picker-button {
-  margin-left: 10px;
 }
 
 .date-picker {
