@@ -10,16 +10,39 @@ hero:
     - theme: brand
       text: Jump to the project
       link: /project
-    # - theme: alt
-    #   text: API Examples
-    #   link: /api-examples
-
-features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
 ---
 
+
+
+<HorizontalContainer>
+    <HorizontalCard
+      title="Feature section 1"
+      excerpt="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam nec purus ut felis cursus ultricies. Sed nec nunc nec nunc."
+      image="https://picsum.photos/500/300"
+      url="./project"
+      :hideCategory="true"
+      :hideAuthor="true"
+      titleLines="5"
+      excerptLines="5"
+    />
+    <HorizontalCard
+      title="Feature section 2"
+      excerpt="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam nec purus ut felis cursus ultricies. Sed nec nunc nec nunc."
+      image="https://picsum.photos/400/300"
+      url="./project"
+      :hideCategory="true"
+      :hideAuthor="true"
+      titleLines="5"
+      excerptLines="5"
+    />
+    <HorizontalCard
+      title="Feature section 3"
+      excerpt="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam nec purus ut felis cursus ultricies. Sed nec nunc nec nunc."
+      image="https://picsum.photos/400/500"
+      url="./project"
+      :hideCategory="true"
+      :hideAuthor="true"
+      titleLines="5"
+      excerptLines="5"
+    />
+  </HorizontalContainer>
