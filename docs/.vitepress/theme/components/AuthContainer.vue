@@ -23,7 +23,9 @@
       <button class="debug-button" @click="fetchUserProducts">
         Debug: List User Products
       </button>
-      <SearchFood @add-product="handleAddProduct" />
+
+      <!-- Use Background and handle events from it -->
+      <Background @add-product="handleAddProduct" />
 
       <p v-if="addError" class="error">{{ addError }}</p>
       <p v-if="addSuccess" class="success">{{ addSuccess }}</p>
@@ -48,12 +50,12 @@ import {
   signOut,
 } from "firebase/auth";
 import { collection, addDoc, getDocs } from "firebase/firestore";
-import SearchFood from "./SearchFood.vue";
+import Background from "./Background.vue"; // Import Background
 
 export default {
   name: "AuthContainer",
   components: {
-    SearchFood,
+    Background, // Use Background instead of SearchFood directly
   },
   setup() {
     const user = ref(null);
@@ -123,7 +125,7 @@ export default {
         return;
       }
       try {
-        // console.log("Received product data:", JSON.stringify(product, null, 2)); // Log complete product data
+        console.log("Received product data:", JSON.stringify(product, null, 2)); // Log complete product data
         const productsCollection = collection(db, "users", user.value.uid, "products");
         const productData = {
           barcode: product.barcode || "Unknown",
@@ -134,12 +136,12 @@ export default {
           added_at: new Date(),
         };
         const docRef = await addDoc(productsCollection, productData);
-        // console.log("Product added with ID:", docRef.id);
+        console.log("Product added with ID:", docRef.id);
         addSuccess.value = "Product added successfully!";
         addError.value = "";
       } catch (error) {
         addError.value = "Failed to add product to the list.";
-        // console.error("Error adding document:", error);
+        console.error("Error adding document:", error);
       }
     };
 

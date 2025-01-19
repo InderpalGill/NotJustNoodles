@@ -3,6 +3,6 @@ layout: home
 ---
 
 
-<Background />
+<!-- <Background /> -->
 
 <AuthContainer />
