@@ -3,9 +3,9 @@
 layout: home
 
 hero:
-  name: "NWHacks 2025"
-  text: "Placeholder description"
-  tagline: Placeholder tagline
+  name: "NotJustNoodles"
+  text: "Helping you meet your macro goals"
+  # tagline: Placeholder tagline
   actions:
     - theme: brand
       text: Jump to the project
@@ -14,12 +14,6 @@ hero:
     #   text: API Examples
     #   link: /api-examples
 
-features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+
 ---
 

@@ -8,7 +8,7 @@
       <div class="image-container">
     <img src="./Images/image.jpg" alt="Fruits and smoothie" class="background-image">
     <div class="overlay-text">
-      <h1>Welcome to Your Nutrition Dashboard</h1></div>
+      <h1>Welcome to NotJustNoodles</h1></div>
   </div>
       <!-- <div class="auth-image">
         <img :src="currentImage" alt="Auth Image" />
@@ -296,7 +296,7 @@ export default {
 .image-container {
   position: relative;
   text-align: center;
-  width: 100%;
+  width: 65%;
   max-width: 800px; /* Adjust to fit your layout */
   margin: 0 auto;
   
@@ -310,8 +310,8 @@ export default {
 
 .overlay-text {
   position: absolute;
-  top: 85%;
-  left: 65%;
+  top: 88%;
+  left: 62%;
   transform: translate(-18%, -85%);
   color: #333;
   font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
