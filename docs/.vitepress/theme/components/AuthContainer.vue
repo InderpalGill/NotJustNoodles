@@ -8,15 +8,15 @@
         <div class="auth-forms">
           <div v-if="isLogin" class="login-form">
             <div class="form-title">Login</div>
-            <input 
-              type="email" 
-              v-model="loginEmail" 
+            <input
+              type="email"
+              v-model="loginEmail"
               placeholder="Email"
               autocomplete="email"
             />
-            <input 
-              type="password" 
-              v-model="loginPassword" 
+            <input
+              type="password"
+              v-model="loginPassword"
               placeholder="Password"
               autocomplete="current-password"
             />
@@ -25,15 +25,15 @@
           </div>
           <div v-else class="register-form">
             <div class="form-title">Register</div>
-            <input 
-              type="email" 
-              v-model="registerEmail" 
+            <input
+              type="email"
+              v-model="registerEmail"
               placeholder="Email"
               autocomplete="email"
             />
-            <input 
-              type="password" 
-              v-model="registerPassword" 
+            <input
+              type="password"
+              v-model="registerPassword"
               placeholder="Password"
               autocomplete="new-password"
             />
@@ -54,19 +54,21 @@
     </div>
 
     <div v-else class="authenticated-content">
-      <button class="logout-button" @click="logout">Logout</button>
-      <p v-if="addError" class="error">{{ addError }}</p>
-      <p v-if="addSuccess" class="success">{{ addSuccess }}</p>
+      <div class="logout-debug-container">
+        <button class="logout-button" @click="logout">Logout</button>
+        <p v-if="addError" class="error">{{ addError }}</p>
+        <p v-if="addSuccess" class="success">{{ addSuccess }}</p>
+        <!-- <button class="debug-button" @click="fetchUserProducts">
+          Debug: List User Products
+        </button> -->
+      </div>
       <!-- Use Background and handle events from it -->
       <Background @add-product="handleAddProduct" />
-      <button class="debug-button" @click="fetchUserProducts">
-        Debug: List User Products
-      </button>
 
-      <div v-if="userProducts.length" class="user-products">
+      <!-- <div v-if="userProducts.length" class="user-products">
         <h3>User Products:</h3>
         <pre>{{ userProducts }}</pre>
-      </div>
+      </div> -->
 
       <div v-if="fetchError" class="error">{{ fetchError }}</div>
     </div>
@@ -105,7 +107,9 @@ export default {
     const isLogin = ref(true); // State to toggle between login and register
 
     const currentImage = computed(() =>
-      isLogin.value ? "/streak-saver/undraw_checking-boxes_j0im.svg" : "/streak-saver/undraw_check-boxes_ewf2.svg"
+      isLogin.value
+        ? "/streak-saver/undraw_checking-boxes_j0im.svg"
+        : "/streak-saver/undraw_check-boxes_ewf2.svg"
     );
 
     onMounted(() => {
@@ -168,14 +172,32 @@ export default {
       }
     };
 
-    const handleAddProduct = async (product) => {
+    const handleAddProduct = async ({ product, date }) => {
       if (!user.value) {
         addError.value = "You must be logged in to add products.";
         return;
       }
+
+      // Check the date format (e.g., YYYY-MM-DD)
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(date)) {
+        addError.value = "Please enter a valid date in the format YYYY-MM-DD.";
+        return;
+      }
+
       try {
-        console.log("Received product data:", JSON.stringify(product, null, 2)); // Log complete product data
-        const productsCollection = collection(db, "users", user.value.uid, "products");
+        console.log("Received product data:", JSON.stringify(product, null, 2));
+
+        // Accessing the correct collection path
+        const productsCollection = collection(
+          db,
+          "users",
+          user.value.uid,
+          "dates",
+          date,
+          "products"
+        );
+
         const productData = {
           barcode: product.barcode || "Unknown",
           product_name: product.product_name || "No product name available",
@@ -184,14 +206,32 @@ export default {
           nutriments: product.nutriments || {},
           added_at: new Date(),
         };
+
+        // Adding the document to Firestore
         const docRef = await addDoc(productsCollection, productData);
         console.log("Product added with ID:", docRef.id);
         addSuccess.value = "Product added successfully!";
         addError.value = "";
+
+        // Show confirmation toast
+        showToast("Product added successfully!");
       } catch (error) {
         addError.value = "Failed to add product to the list.";
         console.error("Error adding document:", error);
       }
+    };
+
+    // Function to show a confirmation toast
+    const showToast = (message) => {
+      const toast = document.createElement("div");
+      toast.className = "toast"; // Ensure you have the appropriate styles for .toast
+      toast.innerText = message;
+      document.body.appendChild(toast);
+
+      // Remove toast after 3 seconds
+      setTimeout(() => {
+        document.body.removeChild(toast);
+      }, 3000);
     };
 
     const fetchUserProducts = async () => {
@@ -201,8 +241,9 @@ export default {
         return;
       }
       try {
+        const today = new Date().toISOString().split("T")[0];
         console.log("Fetching products for user:", user.value.uid);
-        const productsCollection = collection(db, "users", user.value.uid, "products");
+        const productsCollection = collection(db, "users", user.value.uid, "dates", today, "products");
         const productsSnapshot = await getDocs(productsCollection);
         const productsList = productsSnapshot.docs.map((doc) => ({
           id: doc.id,
@@ -247,8 +288,8 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px;
-  min-height: 100vh;
+  /* padding: 40px; */
+  /* min-height: 100vh; */
   width: 100%;
 }
 
@@ -354,20 +395,14 @@ button:hover {
   text-decoration: underline;
 }
 
-.logout-button {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+.logout-button,
+.debug-button {
   padding: 10px 20px;
   cursor: pointer;
 }
 
 .debug-button {
-  position: absolute;
-  top: 60px;
-  right: 20px;
-  padding: 10px 20px;
-  cursor: pointer;
+  background-color: var(--vp-button-alt-bg);
 }
 
 .error {
@@ -384,10 +419,37 @@ button:hover {
 
 .authenticated-content {
   width: 100%;
-  max-width: 800px;
+  /* max-width: 1200px; */
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: 0 auto;
+  /* padding: 10px; */
+}
+
+.logout-debug-container {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 15px 20px;
+  /* background-color: var(--vp-c-bg-soft); */
+  border-radius: 8px;
+}
+
+.logout-debug-container .error,
+.logout-debug-container .success {
+  text-align: center;
+  margin: 0;
+  grid-column: 2;
+  min-width: 200px;
+}
+
+.background {
+  width: 100%;
 }
 
 .user-products {
@@ -413,6 +475,7 @@ button:hover {
 @media (max-width: 768px) {
   .auth-content {
     flex-direction: column;
+    padding: 20px;
   }
 
   .auth-image,
@@ -422,6 +485,27 @@ button:hover {
 
   .auth-image {
     margin-bottom: 20px;
+  }
+
+  .background {
+    padding: 0px;
+  }
+
+  .logout-debug-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 10px;
+    padding: 15px;
+  }
+
+  .logout-debug-container .error,
+  .logout-debug-container .success {
+    grid-column: 1;
+    margin: 5px 0;
+  }
+
+  .logout-debug-container button {
+    width: 100%;
   }
 }
 </style>
