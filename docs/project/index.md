@@ -2,4 +2,7 @@
 layout: home
 ---
 
+
 <Background />
+
+<AuthContainer />

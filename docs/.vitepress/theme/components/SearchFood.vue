@@ -1,42 +1,156 @@
 <template>
   <div class="open-food-facts">
     <div class="title">Search for a Product by Barcode</div>
-    <div id="input">
+
+    <div class="search-section">
       <input
+        type="text"
         v-model="barcode"
         placeholder="Enter barcode"
         @keyup.enter="searchByBarcode"
         style="font-size: 24px;"/>
+        
+      <button @click="searchByBarcode">Search</button>
     </div>
-    <button @click="searchByBarcode">Search</button>
 
     <div v-if="loading" class="loading">Loading...</div>
     <div v-if="error" class="error">{{ error }}</div>
 
     <div v-if="product" class="product-info">
-      <div class="product-name">
-        {{ product.product_name || "No product name available" }}
+      <div class="product-header">
+        <img v-if="product.image_url" :src="product.image_url" alt="Product Image" />
+        <div class="product-title-brand">
+          <div class="product-name">
+            {{ product.product_name || "No product name available" }}
+          </div>
+          <div class="product-brand">
+            {{ product.brands }}
+          </div>
+          <button class="add-to-list-button" @click="emitAddProduct">Add to List</button>
+        </div>
       </div>
-      <img v-if="product.image_url" :src="product.image_url" alt="Product Image" />
-      <div><strong>Brands:</strong> {{ product.brands }}</div>
-      <div><strong>Categories:</strong> {{ product.categories }}</div>
-      <div><strong>Allergens:</strong> {{ product.allergens || "None" }}</div>
-      <div><strong>Ingredients:</strong> {{ product.ingredients_text }}</div>
-      <div><strong>Nutrition Grade:</strong> {{ product.nutrition_grade_fr }}</div>
+      <div class="product-details">
+        <div class="detail-card nutrition-facts">
+          <div class="card-title" @click="toggleNutritionFacts">
+            Nutrition Facts
+            <span v-if="!showNutritionFacts">(click to expand)</span>
+            <span v-else>(click to collapse)</span>
+          </div>
+          <div class="card-content" v-show="showNutritionFacts">
+            <table class="nutrition-table">
+              <thead>
+                <tr>
+                  <th>Nutrient</th>
+                  <th>Per 100g</th>
+                  <th>Per Serving</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(nutrient, index) in nutrimentsDetailedList" :key="index">
+                  <td>{{ nutrient.name }}</td>
+                  <td>{{ nutrient.value_100g }} {{ nutrient.unit }}</td>
+                  <td v-if="nutrient.value_serving">
+                    {{ nutrient.value_serving }} {{ nutrient.unit }}
+                  </td>
+                  <td v-else>N/A</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="detail-card debug-info">
+        <div class="card-title" @click="toggleDebug">
+          Debug Information
+          <span v-if="!showDebug">(click to expand)</span>
+          <span v-else>(click to collapse)</span>
+        </div>
+        <div class="card-content" v-show="showDebug">
+          <pre>{{ debugInfo }}</pre>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import { db } from "../firebase";
+import { collection, addDoc } from "firebase/firestore";
+
 export default {
-  name: "OpenFoodFactsBarcode",
+  name: "SearchFood",
   data() {
     return {
       barcode: "",
       product: null,
       loading: false,
       error: null,
+      showDebug: false,
+      showNutritionFacts: false,
     };
+  },
+  computed: {
+    nutrimentsList() {
+      if (!this.product || !this.product.nutriments) {
+        return [];
+      }
+      const nutriments = this.product.nutriments;
+      const nutrientsToDisplay = [
+        "energy-kcal",
+        "fat",
+        "saturated-fat",
+        "carbohydrates",
+        "sugars",
+        "fiber",
+        "proteins",
+        "salt",
+        "sodium",
+      ];
+
+      return nutrientsToDisplay
+        .map((nutrimentKey) => {
+          const value = nutriments[nutrimentKey + "_100g"];
+          if (value !== undefined) {
+            return {
+              name: this.formatNutriment(nutrimentKey),
+              value: value,
+              unit: nutriments[nutrimentKey + "_unit"] || "g",
+            };
+          }
+        })
+        .filter((nutrient) => nutrient !== undefined);
+    },
+    nutrimentsDetailedList() {
+      if (!this.product || !this.product.nutriments) {
+        return [];
+      }
+      const nutriments = this.product.nutriments;
+      const nutrients = Object.keys(nutriments)
+        .filter((key) => key.endsWith("_100g") && !key.includes("unit"))
+        .map((key) => key.replace("_100g", ""));
+
+      return nutrients.map((nutrientKey) => {
+        const value_100g = nutriments[`${nutrientKey}_100g`];
+        const unit = nutriments[`${nutrientKey}_unit`] || "g";
+        const value_serving = this.getServingValue(nutriments, nutrientKey);
+        return {
+          name: this.formatNutriment(nutrientKey),
+          value_100g,
+          unit,
+          value_serving,
+        };
+      });
+    },
+    additionalNutrientsList() {
+      const mainNutrients = this.nutrimentsList.map((n) => n.name.toLowerCase());
+      const detailedNutrients = this.nutrimentsDetailedList;
+      return detailedNutrients.filter(
+        (n) => !mainNutrients.includes(n.name.toLowerCase())
+      );
+    },
+    debugInfo() {
+      return JSON.stringify(this.product, null, 2);
+    },
   },
   methods: {
     async searchByBarcode() {
@@ -50,6 +164,7 @@ export default {
       this.product = null;
 
       try {
+        console.log("Searching for barcode:", this.barcode);
         const response = await fetch(
           `https://world.openfoodfacts.org/api/v0/product/${this.barcode}.json`,
           {
@@ -67,8 +182,10 @@ export default {
 
         if (data.status === 1 && data.product) {
           this.product = data.product;
+          console.log("Product found:", this.product);
         } else {
           this.error = "No product found with this barcode.";
+          console.warn("No product found for barcode:", this.barcode);
         }
       } catch (err) {
         this.error = "An error occurred while fetching data.";
@@ -77,73 +194,279 @@ export default {
         this.loading = false;
       }
     },
+    formatNutriment(key) {
+      return key.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+    },
+    toggleDebug() {
+      this.showDebug = !this.showDebug;
+    },
+    toggleNutritionFacts() {
+      this.showNutritionFacts = !this.showNutritionFacts;
+    },
+    getServingValue(nutriments, key) {
+      if (this.product && this.product.serving_size && nutriments[`${key}_serving`]) {
+        return nutriments[`${key}_serving`];
+      }
+      return null;
+    },
+    emitAddProduct() {
+      if (!this.product) {
+        this.error = "No product to add.";
+        console.error("Emit add-product without product data.");
+        return;
+      }
+      // console.log("Product data being emitted:", JSON.stringify(this.product, null, 2)); // Log complete product data
+      this.$emit("add-product", this.product);
+    },
   },
 };
 </script>
 
 <style scoped>
-/* Basic styles */
 .open-food-facts {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  padding: 16px;
-  margin: 16px auto;
-  border-radius: 8px;
+  gap: 1.5rem;
+  padding: 24px;
+  margin: 24px auto;
+  border-radius: 16px;
   border: 1px solid var(--vp-c-divider);
   background-color: var(--vp-c-bg-soft);
   box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
   max-width: 600px;
   margin: 10 auto;
   font-family: Arial, sans-serif;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .title {
   font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
   font-size: 24px;
   align-items: center;
+
   font-weight: bold;
-  margin-bottom: 10px;
+  text-align: center;
+  color: var(--vp-c-text);
+}
+
+.search-section {
+  display: flex;
+  padding: 0;
+  gap: 0;
+  background-color: var(--vp-c-bg-alt);
+  border-radius: 8px;
+  border: 1px solid var(--vp-c-divider);
+  overflow: hidden;
 }
 
 input[type="text"] {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background-color: var(--vp-c-bg);
+  border-radius: 8px 0 0 8px;
+  font-size: 16px;
 }
 
 button {
-  padding: 8px 16px;
-  margin: 10px 0;
+  padding: 12px 20px;
+  border: none;
+  background-color: var(--vp-button-brand-bg);
+  color: var(--vp-button-brand-text);
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-radius: 0 8px 8px 0;
 }
 
-.loading {
+button:hover {
+  background-color: var(--vp-button-brand-hover-bg);
+  color: var(--vp-button-brand-hover-text);
+}
+
+.add-to-list-button {
   margin-top: 10px;
+  width: 100%;
+  border-radius: 8px;
+  background-color: var(--vp-button-brand-bg);
+  color: var(--vp-button-brand-text);
+}
+
+.add-to-list-button:hover {
+  background-color: var(--vp-button-brand-hover-bg);
+  color: var(--vp-button-brand-hover-text);
+}
+
+.loading,
+.error {
+  text-align: center;
+  font-size: 16px;
+  color: var(--vp-c-warning-1);
 }
 
 .error {
-  color: red;
-  margin-top: 10px;
+  color: var(--vp-c-warning-1);
+}
+
+.success {
+  color: green;
+  font-size: 14px;
 }
 
 .product-info {
-  margin-top: 20px;
-  border: 1px solid #ccc;
-  padding: 10px;
+  background-color: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.product-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.product-title-brand {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-name {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
 }
 
-.product-info img {
-  max-width: 100%;
-  height: auto;
+.product-brand {
+  font-size: 18px;
+  color: var(--vp-c-text-2);
+}
+
+.product-header img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--vp-c-divider);
+}
+
+.product-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detail-card {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  padding: 15px;
+  background-color: var(--vp-c-bg-soft);
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.card-content {
+  font-size: 16px;
+}
+
+.pill {
+  display: inline-block;
+  border: 1px solid var(--vp-c-brand-soft);
+  background-color: var(--vp-c-brand-soft);
+  color: var(--vp-c-text-2);
+  padding: 6px 12px;
+  margin: 4px;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+.pill:hover {
+  border: 1px solid var(--vp-c-brand);
+  color: var(--vp-c-text-1);
+}
+
+.nutrition-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.nutrition-table th,
+.nutrition-table td {
+  border: 1px solid var(--vp-c-divider);
+  padding: 8px;
+  text-align: left;
+}
+
+.nutrition-table th {
+  background-color: var(--vp-c-bg-soft);
+}
+
+.debug-info .card-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.debug-info .card-content {
+  font-size: 16px;
+}
+
+.debug-info pre {
+  background-color: var(--vp-c-bg-soft);
+  padding: 10px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+}
+
+.additional-nutrient-details {
   margin-top: 10px;
 }
 
 
+.logout-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
 
+.debug-button {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
 
+.user-products {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 800px;
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.user-products h3 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.user-products pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
 </style>

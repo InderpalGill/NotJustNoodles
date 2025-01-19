@@ -6,6 +6,9 @@ export default defineConfig({
   description: "Placeholder description",
   cleanUrls: true,
   base: "/streak-saver/",
+  vite: { 
+    ssr: { noExternal: ['@cynber/vitepress-valence']} 
+  },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [

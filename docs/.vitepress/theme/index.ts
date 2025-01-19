@@ -16,6 +16,8 @@ import { JSONTable,
 import SearchFood from './components/SearchFood.vue'
 import Background from './components/Background.vue'
 import MacroCharts from './components/MacroCharts.vue'
+import AuthContainer from './components/AuthContainer.vue'
+
 
 export default {
   extends: DefaultTheme,
@@ -36,5 +38,6 @@ export default {
     app.component('SearchFood', SearchFood)
     app.component('Background', Background)
     app.component('MacroCharts', MacroCharts)
+    app.component('AuthContainer', AuthContainer)
   }
 } satisfies Theme
