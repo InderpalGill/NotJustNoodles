@@ -63,7 +63,7 @@
         </button> -->
       </div>
       <!-- Use Background and handle events from it -->
-      <Background @add-product="handleAddProduct" />
+      <Background :userId="user?.uid" @add-product="handleAddProduct" />
 
       <!-- <div v-if="userProducts.length" class="user-products">
         <h3>User Products:</h3>

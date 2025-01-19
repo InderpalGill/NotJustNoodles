@@ -4,8 +4,9 @@
 
     <div class="layout">
       <div class="search-food">
+        <!-- Pass the userId prop down -->
         <SearchFood @add-product="$emit('add-product', $event)" />
-        <SearchFoodName @add-product="$emit('add-product', $event)" />
+        <SearchFoodName :userId="userId" @add-product="$emit('add-product', $event)" />
       </div>
       <div id="macro-charts">
         <ProductsList />
@@ -14,6 +15,17 @@
     </div>
   </div>
 </template>
+
+<script>
+export default {
+  props: {
+    userId: {
+      required: true,
+      type: String,
+    },
+  },
+};
+</script>
 
 <style scoped>
 .background {
