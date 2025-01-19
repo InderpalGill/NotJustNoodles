@@ -20,10 +20,20 @@
     </div>
     <div v-else class="authenticated-content">
       <button class="logout-button" @click="logout">Logout</button>
+      <button class="debug-button" @click="fetchUserProducts">
+        Debug: List User Products
+      </button>
       <SearchFood @add-product="handleAddProduct" />
 
       <p v-if="addError" class="error">{{ addError }}</p>
       <p v-if="addSuccess" class="success">{{ addSuccess }}</p>
+
+      <div v-if="userProducts.length" class="user-products">
+        <h3>User Products:</h3>
+        <pre>{{ userProducts }}</pre>
+      </div>
+
+      <div v-if="fetchError" class="error">{{ fetchError }}</div>
     </div>
   </div>
 </template>
@@ -37,7 +47,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs } from "firebase/firestore";
 import SearchFood from "./SearchFood.vue";
 
 export default {
@@ -55,20 +65,25 @@ export default {
     const registerError = ref("");
     const addError = ref("");
     const addSuccess = ref("");
+    const userProducts = ref("");
+    const fetchError = ref("");
 
     onMounted(() => {
       onAuthStateChanged(auth, (currentUser) => {
         user.value = currentUser;
+        console.log("Auth State Changed: ", currentUser);
       });
     });
 
     const register = async () => {
       try {
+        console.log("Attempting to register with email:", registerEmail.value);
         await createUserWithEmailAndPassword(
           auth,
           registerEmail.value,
           registerPassword.value
         );
+        console.log("Registration successful");
         registerEmail.value = "";
         registerPassword.value = "";
         registerError.value = "";
@@ -80,7 +95,9 @@ export default {
 
     const login = async () => {
       try {
+        console.log("Attempting to login with email:", loginEmail.value);
         await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
+        console.log("Login successful");
         loginEmail.value = "";
         loginPassword.value = "";
         loginError.value = "";
@@ -92,7 +109,9 @@ export default {
 
     const logout = async () => {
       try {
+        console.log("Attempting to logout");
         await signOut(auth);
+        console.log("Logout successful");
       } catch (error) {
         console.error("Logout error:", error);
       }
@@ -101,9 +120,11 @@ export default {
     const handleAddProduct = async (product) => {
       if (!user.value) {
         addError.value = "You must be logged in to add products.";
+        console.error("Add product attempt without authenticated user.");
         return;
       }
       try {
+        console.log("Adding product for user:", user.value.uid);
         const productsCollection = collection(db, "users", user.value.uid, "products");
         const productData = {
           barcode: product.barcode,
@@ -113,12 +134,36 @@ export default {
           nutriments: product.nutriments || {},
           added_at: new Date(),
         };
-        await addDoc(productsCollection, productData);
+        const docRef = await addDoc(productsCollection, productData);
+        console.log("Product added with ID:", docRef.id);
         addSuccess.value = "Product added successfully!";
         addError.value = "";
       } catch (error) {
         addError.value = "Failed to add product to the list.";
         console.error("Error adding document:", error);
+      }
+    };
+
+    const fetchUserProducts = async () => {
+      if (!user.value) {
+        fetchError.value = "You must be logged in to view products.";
+        console.error("Fetch products attempt without authenticated user.");
+        return;
+      }
+      try {
+        console.log("Fetching products for user:", user.value.uid);
+        const productsCollection = collection(db, "users", user.value.uid, "products");
+        const productsSnapshot = await getDocs(productsCollection);
+        const productsList = productsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        userProducts.value = JSON.stringify(productsList, null, 2);
+        console.log("Fetched user products:", productsList);
+        fetchError.value = "";
+      } catch (error) {
+        fetchError.value = "Failed to fetch user products.";
+        console.error("Error fetching documents:", error);
       }
     };
 
@@ -136,6 +181,9 @@ export default {
       addError,
       addSuccess,
       handleAddProduct,
+      userProducts,
+      fetchUserProducts,
+      fetchError,
     };
   },
 };
@@ -147,9 +195,7 @@ export default {
   flex-direction: column;
   align-items: center;
   padding: 40px;
-  background-color: var(--vp-c-bg-alt);
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  min-width: 100%;
 }
 
 .auth-forms {
@@ -187,6 +233,14 @@ button {
   cursor: pointer;
 }
 
+.debug-button {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
 .error {
   color: red;
   font-size: 14px;
@@ -203,5 +257,24 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.user-products {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 800px;
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.user-products h3 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.user-products pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 </style>
