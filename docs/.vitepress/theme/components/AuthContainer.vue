@@ -8,15 +8,35 @@
         <div class="auth-forms">
           <div v-if="isLogin" class="login-form">
             <div class="form-title">Login</div>
-            <input type="email" v-model="loginEmail" placeholder="Email" />
-            <input type="password" v-model="loginPassword" placeholder="Password" />
+            <input 
+              type="email" 
+              v-model="loginEmail" 
+              placeholder="Email"
+              autocomplete="email"
+            />
+            <input 
+              type="password" 
+              v-model="loginPassword" 
+              placeholder="Password"
+              autocomplete="current-password"
+            />
             <button @click="login">Login</button>
             <p v-if="loginError" class="error">{{ loginError }}</p>
           </div>
           <div v-else class="register-form">
             <div class="form-title">Register</div>
-            <input type="email" v-model="registerEmail" placeholder="Email" />
-            <input type="password" v-model="registerPassword" placeholder="Password" />
+            <input 
+              type="email" 
+              v-model="registerEmail" 
+              placeholder="Email"
+              autocomplete="email"
+            />
+            <input 
+              type="password" 
+              v-model="registerPassword" 
+              placeholder="Password"
+              autocomplete="new-password"
+            />
             <button @click="register">Register</button>
             <p v-if="registerError" class="error">{{ registerError }}</p>
           </div>
