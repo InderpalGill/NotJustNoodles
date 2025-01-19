@@ -3,6 +3,7 @@
     <div class="title">Search for a Product by Barcode</div>
     <div class="search-section">
       <input
+        type="text"
         v-model="barcode"
         placeholder="Enter barcode"
         @keyup.enter="searchByBarcode"
@@ -314,30 +315,36 @@ export default {
 
 .search-section {
   display: flex;
-  gap: 10px;
+  /* Remove padding and gap to allow button to touch the edge */
+  padding: 0;
+  gap: 0;
+  background-color: var(--vp-c-bg-alt);
+  border-radius: 8px;
+  border: 1px solid var(--vp-c-divider);
+  overflow: hidden; /* Ensure rounded corners are maintained */
 }
 
 input[type="text"] {
   flex: 1;
   padding: 12px;
-  border: 1px solid var(--vp-c-divider);
+  border: none; /* Remove default border to merge with button */
   background-color: var(--vp-c-bg);
-  border-radius: 8px;
+  border-radius: 8px 0 0 8px; /* Rounded corners on the left */
+  font-size: 16px;
 }
 
 button {
   padding: 12px 20px;
-  border-radius: 8px;
-  border: 1px solid var(--vp-button-brand-border);
+  border: none; /* Remove default border */
   background-color: var(--vp-button-brand-bg);
   color: var(--vp-button-brand-text);
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  border-radius: 0 8px 8px 0; /* Rounded corners on the right */
 }
 
 button:hover {
-  border: 1px solid var(--vp-button-brand-hover-border);
   background-color: var(--vp-button-brand-hover-bg);
   color: var(--vp-button-brand-hover-text);
 }
@@ -380,7 +387,7 @@ button:hover {
 
 .product-brand {
   font-size: 18px;
-  color: gray;
+  color: var(--vp-c-text-2);
 }
 
 .product-header img {
@@ -449,7 +456,9 @@ button:hover {
 }
 
 .debug-info {
-  border-top: 1px solid var(--vp-c-divider);
+  background-color: var(--vp-c-bg);
+  border-radius: 8px;
+  border: 1px solid var(--vp-c-divider);
   padding-top: 15px;
 }
 
