@@ -25,11 +25,20 @@
       <div v-else>No products found for this date.</div>
     </div>
 
-    <button class="refresh-button" @click="fetchProducts">Refresh</button>
-    <button class="date-picker-button" @click="toggleDatePicker">Pick Date</button>
+    <div class="button-bar">
+      <button class="refresh-button" @click="fetchProducts">Refresh</button>
+      <button class="jump-to-today-button" @click="jumpToToday">Jump to Today</button>
+      <button class="date-picker-button" @click="toggleDatePicker">Pick Date</button>
+    </div>
 
-      <!-- Date Picker Modal -->
-      <input type="date" v-model="datePicker" v-if="showDatePicker" @change="setDate" class="date-picker" />
+    <!-- Date Picker Modal -->
+    <input
+      type="date"
+      v-model="datePicker"
+      v-if="showDatePicker"
+      @change="setDate"
+      class="date-picker"
+    />
   </div>
 </template>
 
@@ -104,6 +113,12 @@ export default {
       showDatePicker.value = false; // Hide the date picker after selecting
     };
 
+    // Jump to today's date
+    const jumpToToday = () => {
+      currentDate.value = new Date();
+      fetchProducts(); // Fetch products for today's date
+    };
+
     // Fetch products when the component is mounted
     onMounted(() => {
       fetchProducts();
@@ -120,6 +135,7 @@ export default {
       toggleDatePicker,
       datePicker,
       setDate,
+      jumpToToday,
     };
   },
 };
@@ -170,7 +186,14 @@ export default {
   font-size: 14px;
 }
 
-.refresh-button, .date-picker-button {
+.button-bar {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+}
+
+.refresh-button,
+.date-picker-button {
   margin-top: 10px;
   padding: 10px 20px;
   border: none;
@@ -182,8 +205,24 @@ export default {
   transition: background-color 0.3s ease;
 }
 
-.refresh-button:hover, .date-picker-button:hover {
+.refresh-button:hover,
+.date-picker-button:hover {
   background-color: var(--vp-button-alt-hover-bg);
+}
+
+.jump-to-today-button {
+  margin-left: 10px;
+  padding: 10px 20px;
+  border: none;
+  background-color: var(--vp-button-brand-bg);
+  color: var(--vp-button-brand-text);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.jump-to-today-button:hover {
+  background-color: var(--vp-button-brand-hover-bg);
 }
 
 .date-picker-button {
