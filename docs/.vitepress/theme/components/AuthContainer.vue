@@ -54,19 +54,21 @@
     </div>
 
     <div v-else class="authenticated-content">
-      <button class="logout-button" @click="logout">Logout</button>
-      <p v-if="addError" class="error">{{ addError }}</p>
-      <p v-if="addSuccess" class="success">{{ addSuccess }}</p>
+      <div class="logout-debug-container">
+        <button class="logout-button" @click="logout">Logout</button>
+        <p v-if="addError" class="error">{{ addError }}</p>
+        <p v-if="addSuccess" class="success">{{ addSuccess }}</p>
+        <button class="debug-button" @click="fetchUserProducts">
+          Debug: List User Products
+        </button>
+      </div>
       <!-- Use Background and handle events from it -->
       <Background @add-product="handleAddProduct" />
-      <button class="debug-button" @click="fetchUserProducts">
-        Debug: List User Products
-      </button>
 
-      <div v-if="userProducts.length" class="user-products">
+      <!-- <div v-if="userProducts.length" class="user-products">
         <h3>User Products:</h3>
         <pre>{{ userProducts }}</pre>
-      </div>
+      </div> -->
 
       <div v-if="fetchError" class="error">{{ fetchError }}</div>
     </div>
@@ -422,10 +424,29 @@ button:hover {
 
 .authenticated-content {
   width: 100%;
-  max-width: 800px;
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.logout-debug-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px; /* Add space above Background */
+  padding: 10px; /* Optional: padding for spacing */
+}
+
+.logout-button,
+.debug-button {
+  margin-right: 10px; /* Space between buttons */
+}
+
+.background {
+  width: 100%;
+  max-width: 800px; /* Optional: limit max width */
 }
 
 .user-products {

@@ -247,21 +247,19 @@ export default {
 
 .search-section {
   display: flex;
-  padding: 0;
-  gap: 0;
-  background-color: var(--vp-c-bg-alt);
-  border-radius: 8px;
-  border: 1px solid var(--vp-c-divider);
-  overflow: hidden;
+  flex-direction: column; /* Stack input and button vertically */
+  /* background-color: var(--vp-c-bg-alt); */
+  /* border-radius: 8px; */
+  /* border: 1px solid var(--vp-c-divider); */
 }
 
 input[type="text"] {
-  flex: 1;
+  width: calc(100%); /* Ensures it takes available width */
   padding: 12px;
+  margin-bottom: 10px;
   border: none;
-  background-color: var(--vp-c-bg);
+  background-color: var(--vp-c-bg-alt);
   border-radius: 8px;
-  font-size: 16px;
 }
 
 button {
@@ -270,6 +268,10 @@ button {
   font-weight: bold;
   cursor: pointer;
   border-radius: 8px;
+}
+
+button.brand-button {
+  width: 100%; /* Make button full width */
 }
 
 .brand-button {
