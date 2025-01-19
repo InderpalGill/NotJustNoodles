@@ -14,9 +14,13 @@ import { JSONTable,
          ImageGallery
         } from '@cynber/vitepress-valence'
 import SearchFood from './components/SearchFood.vue'
+
+import SearchFoodName from './components/SearchFoodName.vue'
+
 import Background from './components/Background.vue'
 import MacroCharts from './components/MacroCharts.vue'
 import AuthContainer from './components/AuthContainer.vue'
+
 
 
 export default {
@@ -36,6 +40,7 @@ export default {
     app.component('VerticalCard', VerticalCard)
     app.component('ImageGallery', ImageGallery)
     app.component('SearchFood', SearchFood)
+    app.component('SearchFoodName', SearchFoodName)
     app.component('Background', Background)
     app.component('MacroCharts', MacroCharts)
     app.component('AuthContainer', AuthContainer)
