@@ -8,15 +8,15 @@
         <div class="auth-forms">
           <div v-if="isLogin" class="login-form">
             <div class="form-title">Login</div>
-            <input 
-              type="email" 
-              v-model="loginEmail" 
+            <input
+              type="email"
+              v-model="loginEmail"
               placeholder="Email"
               autocomplete="email"
             />
-            <input 
-              type="password" 
-              v-model="loginPassword" 
+            <input
+              type="password"
+              v-model="loginPassword"
               placeholder="Password"
               autocomplete="current-password"
             />
@@ -25,15 +25,15 @@
           </div>
           <div v-else class="register-form">
             <div class="form-title">Register</div>
-            <input 
-              type="email" 
-              v-model="registerEmail" 
+            <input
+              type="email"
+              v-model="registerEmail"
               placeholder="Email"
               autocomplete="email"
             />
-            <input 
-              type="password" 
-              v-model="registerPassword" 
+            <input
+              type="password"
+              v-model="registerPassword"
               placeholder="Password"
               autocomplete="new-password"
             />
@@ -105,7 +105,9 @@ export default {
     const isLogin = ref(true); // State to toggle between login and register
 
     const currentImage = computed(() =>
-      isLogin.value ? "/streak-saver/undraw_checking-boxes_j0im.svg" : "/streak-saver/undraw_check-boxes_ewf2.svg"
+      isLogin.value
+        ? "/streak-saver/undraw_checking-boxes_j0im.svg"
+        : "/streak-saver/undraw_check-boxes_ewf2.svg"
     );
 
     onMounted(() => {
@@ -168,14 +170,32 @@ export default {
       }
     };
 
-    const handleAddProduct = async (product) => {
+    const handleAddProduct = async ({ product, date }) => {
       if (!user.value) {
         addError.value = "You must be logged in to add products.";
         return;
       }
+
+      // Check the date format (e.g., YYYY-MM-DD)
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(date)) {
+        addError.value = "Please enter a valid date in the format YYYY-MM-DD.";
+        return;
+      }
+
       try {
-        console.log("Received product data:", JSON.stringify(product, null, 2)); // Log complete product data
-        const productsCollection = collection(db, "users", user.value.uid, "products");
+        console.log("Received product data:", JSON.stringify(product, null, 2));
+
+        // Accessing the correct collection path
+        const productsCollection = collection(
+          db,
+          "users",
+          user.value.uid,
+          "dates",
+          date,
+          "products"
+        );
+
         const productData = {
           barcode: product.barcode || "Unknown",
           product_name: product.product_name || "No product name available",
@@ -184,14 +204,32 @@ export default {
           nutriments: product.nutriments || {},
           added_at: new Date(),
         };
+
+        // Adding the document to Firestore
         const docRef = await addDoc(productsCollection, productData);
         console.log("Product added with ID:", docRef.id);
         addSuccess.value = "Product added successfully!";
         addError.value = "";
+
+        // Show confirmation toast
+        showToast("Product added successfully!");
       } catch (error) {
         addError.value = "Failed to add product to the list.";
         console.error("Error adding document:", error);
       }
+    };
+
+    // Function to show a confirmation toast
+    const showToast = (message) => {
+      const toast = document.createElement("div");
+      toast.className = "toast"; // Ensure you have the appropriate styles for .toast
+      toast.innerText = message;
+      document.body.appendChild(toast);
+
+      // Remove toast after 3 seconds
+      setTimeout(() => {
+        document.body.removeChild(toast);
+      }, 3000);
     };
 
     const fetchUserProducts = async () => {

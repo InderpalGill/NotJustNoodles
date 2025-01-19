@@ -32,10 +32,10 @@
             {{ product.brands }}
           </div>
           <button class="add-to-list-button" @click="beginAddToList">
-          <span class="button-icon-text">
-            <Icon icon="carbon:add-filled" width="24" height="24" />
-            Add to List
-          </span>
+            <span class="button-icon-text">
+              <Icon icon="carbon:add-filled" width="24" height="24" />
+              Add to List
+            </span>
           </button>
         </div>
       </div>
@@ -201,10 +201,18 @@ export default {
       this.date = "";
     },
     submitDate() {
-      // Future implementation for adding to Firebase
-      console.log("Date submitted:", this.date);
-      // Reset date input after submission
+      // Check if the date is in the correct format (optional)
+      if (!this.date) {
+        this.error = "Please enter a valid date.";
+        return;
+      }
+
+      // Emit the product along with the date
+      this.$emit("add-product", { product: this.product, date: this.date });
+
+      // Resetting the input fields after submission
       this.date = "";
+      this.cancelAddToList(); // reset addingToList state
     },
   },
 };
@@ -412,4 +420,3 @@ button {
   text-align: center;
 }
 </style>
-```
