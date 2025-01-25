@@ -3,12 +3,13 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId:  import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId:  import.meta.env.VITE_FIREBASE_APP_ID
+    apiKey: "AIzaSyCLWvulzj65H7RO-EFmkKYqKB-8dh7TX3g",
+    authDomain: "notjustnoodles-20091.firebaseapp.com",
+    projectId: "notjustnoodles-20091",
+    storageBucket: "notjustnoodles-20091.firebasestorage.app",
+    messagingSenderId:  "507934743425",
+    appId:  "1:507934743425:web:c62f93aaf6164cbc3a6680",
+    measurementId: "G-4LR8C8MHGM"
 };
 
 const app = initializeApp(firebaseConfig);
